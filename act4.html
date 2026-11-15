@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pygmalion: Act IV Zine</title>
+<meta name="description" content="A playable toy-theater zine for Act IV of Bernard Shaw's Pygmalion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Caveat:wght@500;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1e2730;
+    --paper: #f4f3ef;
+    --paper-2: #e3e1d9;
+    --white: #fbfbf9;
+    --ink: #1a1a1a;
+    --ink-2: #4a4a4a;
+    --violet: #5b2c8f;
+    --violet-2: #e4d8f2;
+    --gas: #f2b630;
+    --gas-2: #fbe7b0;
+    --right: #2f6b35;
+    --right-2: #dcefdc;
+    --wrong: #8a2b20;
+    --wrong-2: #f6dad6;
+    --slab: "Alfa Slab One", Rockwell, "Roboto Slab", Georgia, serif;
+    --serif: "Literata", Georgia, "Times New Roman", serif;
+    --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; color: var(--ink); font-family: var(--serif); font-size: 1.0625rem; line-height: 1.55;
+    background: var(--night) radial-gradient(ellipse at 90% -10%, rgba(242,182,48,.14), transparent 55%) fixed;
+  }
+  .stage-wrap { padding: 8px; display: flex; justify-content: center; }
+  .zine { width: 100%; max-width: 980px; }
+
+  .page {
+    position: relative; margin-bottom: 28px;
+    background-color: var(--paper);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    padding: 14px clamp(14px, 2.5vw, 26px) 16px;
+    box-shadow: 0 24px 50px rgba(0,0,0,.45);
+  }
+  .js .page { display: none; margin-bottom: 0; }
+  .js .page.active { display: flex; flex-direction: column; height: calc(100vh - 16px); height: calc(100dvh - 16px); overflow-y: auto; animation: pageIn .35s ease-out; }
+  @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+  h1, h2 { font-family: var(--slab); font-weight: 400; line-height: 1.05; margin: 0 0 .35em; }
+  h2 { font-size: clamp(1.45rem, 3.4vw, 2.1rem); padding-right: 6.5rem; margin-bottom: .25em; }
+  h2:focus, h1:focus { outline: none; }
+  .scene-no { display: inline; font-family: var(--hand); font-size: .8em; color: var(--violet); margin-right: .35em; }
+  p { margin: 0 0 1em; max-width: 62ch; }
+  .setup { font-size: 1.05rem; margin-bottom: .7em; }
+  .hint { font-family: var(--hand); font-size: 1.3rem; line-height: 1.25; color: var(--violet); }
+  .folio { position: absolute; top: 14px; right: clamp(14px, 2.5vw, 26px); margin: 0; font-family: var(--hand); font-size: 1.1rem; color: var(--ink-2); }
+
+  .btn { font: 600 1rem/1.1 var(--serif); background: var(--ink); color: var(--paper); border: 0; padding: .75em 1.1em; cursor: pointer; border-radius: 2px; }
+  .btn:hover:not([disabled]) { background: var(--violet); }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  .btn.ghost:hover:not([disabled]) { background: var(--gas-2); }
+  .btn.small { font-size: .88rem; padding: .5em .8em; }
+  .btn[disabled] { opacity: .3; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--gas); outline-offset: 3px; }
+
+  /* ---------- Toy theater ---------- */
+  .stage {
+    position: relative; flex: 1 1 auto; min-height: 160px; max-height: 520px; overflow: hidden;
+    background: linear-gradient(#121920, #26313c 70%); border: 3px solid var(--ink);
+    cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .stage.static { cursor: default; }
+  .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .boards { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; background: repeating-linear-gradient(90deg, #7a5536 0 42px, #694729 42px 44px); }
+  .lip { position: absolute; left: 0; right: 0; bottom: 0; height: 9%; background: #4b3621; border-top: 3px solid #2e2116; z-index: 3; }
+  .valance { position: absolute; top: 0; left: 0; right: 0; height: 8%; background: var(--violet); z-index: 7; }
+  .valance::after { content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 12px; background: radial-gradient(circle at 50% 0, var(--violet) 10.5px, transparent 11.5px) 0 0 / 24px 12px repeat-x; }
+  .curtain { position: absolute; top: 0; bottom: 0; width: 6%; z-index: 7; background: linear-gradient(90deg, #3a1a5e, #6d3ca6 50%, #3a1a5e); }
+  .curtain.l { left: 0; } .curtain.r { right: 0; }
+  .rain { position: absolute; inset: -20% -10%; transform: rotate(9deg); pointer-events: none; z-index: 6; transition: opacity .8s; }
+  .rain i { position: absolute; top: -25%; width: 1.5px; height: 18%; background: linear-gradient(rgba(205,220,232,0), rgba(205,220,232,.8)); animation: fall linear infinite; }
+  @keyframes fall { to { transform: translateY(750%); } }
+  .stage.dry .rain { opacity: 0; }
+  .cast { position: absolute; left: 7%; right: 7%; bottom: 0; height: 80%; display: flex; justify-content: space-evenly; align-items: flex-end; z-index: 4; }
+  .pup { position: relative; height: 100%; flex: none; transition: transform .3s ease, filter .3s ease; transform-origin: 50% 100%; }
+  .pup svg { height: 100%; width: auto; display: block;
+    filter: drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(0 6px 5px rgba(0,0,0,.45)); }
+  .pup.off { display: none; }
+  .pup.dim { filter: brightness(.68) saturate(.7); }
+  .pup.speaking { transform: translateY(-4%) scale(1.07); z-index: 2; }
+  .pup.speaking svg { animation: bob 1s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-2.5%); } }
+  .pup.pop { animation: popin .45s ease-out; }
+  @keyframes popin { from { transform: translateY(45%); } to { transform: none; } }
+  .tag { position: absolute; left: 50%; bottom: 1.5%; transform: translateX(-50%); white-space: nowrap; z-index: 5;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); padding: 3px 5px 2px;
+    font: 600 .6rem/1 var(--serif); letter-spacing: .06em; text-transform: uppercase; }
+  .pup.renamed .tag { background: var(--gas); }
+  .burst { position: absolute; top: 15%; left: 50%; z-index: 8; display: none; pointer-events: none;
+    font-family: var(--slab); font-size: clamp(1.5rem, 6vw, 2.7rem); line-height: 1;
+    background: var(--gas); color: var(--ink); padding: .12em .45em .18em; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    transform: translateX(-50%) rotate(-6deg); }
+  .burst.show { display: block; animation: burst .5s ease-out, burstout .4s ease-in 1.4s forwards; }
+  @keyframes burstout { to { opacity: 0; } }
+  @keyframes burst { 0% { transform: translateX(-50%) rotate(-6deg) scale(.3); } 70% { transform: translateX(-50%) rotate(-6deg) scale(1.15); } 100% { transform: translateX(-50%) rotate(-6deg) scale(1); } }
+  .stage.zap::after { content: ""; position: absolute; inset: 0; background: #fff; z-index: 9; pointer-events: none; animation: flash .75s ease-out forwards; }
+  .tap-hint { position: absolute; right: 8%; top: 12%; z-index: 8; font-family: var(--hand); font-size: 1.25rem; color: var(--gas); pointer-events: none; }
+
+  .theater { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+
+  /* Speech bubble */
+  .bubble { position: relative; background: var(--white); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    flex: none; margin-top: 16px; padding: 12px 16px 10px; min-height: 6em; }
+  .bubble::before { content: ""; position: absolute; top: -15px; left: var(--tx, 50%); width: 24px; height: 24px; background: var(--white);
+    border-left: 3px solid var(--ink); border-top: 3px solid var(--ink); transform: translateX(-50%) rotate(45deg); }
+  .bubble.nar { background: var(--gas-2); }
+  .bubble.nar::before, .bubble.game::before { display: none; }
+  .bubble.game { background: var(--violet-2); }
+  .chip { display: inline-flex; align-items: center; gap: 7px; margin-bottom: .45em; font: 600 .78rem/1 var(--serif); letter-spacing: .07em; text-transform: uppercase; }
+  .chip i { width: 12px; height: 12px; border-radius: 50%; background: var(--c, var(--ink)); border: 1.5px solid var(--ink); }
+  .say { font-size: clamp(1.1rem, 3.3vw, 1.3rem); line-height: 1.45; margin: 0 0 .6em; max-width: none; }
+  .say.plain { color: var(--violet); }
+  .tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .key { font-family: var(--hand); font-size: 1.25rem; color: var(--violet); }
+  .controls { flex: none; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .controls .count { flex: 1; text-align: center; font-family: var(--hand); font-size: 1.25rem; }
+  .controls .next { font-size: 1.05rem; padding: .8em 1.3em; }
+
+  .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: .3em 0 .5em; }
+  .choice, .opt { text-align: left; font: inherit; color: inherit; background: var(--white); border: 2px solid var(--ink); padding: 9px 13px; cursor: pointer; }
+  .choice:hover:not([disabled]), .opt:hover:not([disabled]) { background: var(--gas-2); }
+  .choice[disabled], .opt[disabled] { cursor: default; }
+  .right { background: var(--right-2) !important; border-color: var(--right) !important; }
+  .wrong { background: var(--wrong-2) !important; border-color: var(--wrong) !important; }
+  .mark { font-weight: 700; }
+  .feedback { margin: .3em 0 0; font-weight: 600; }
+
+  .basket { display: flex; flex-wrap: wrap; gap: 8px; margin: .4em 0; }
+  .coin-btn { display: flex; align-items: center; gap: 9px; background: var(--white); border: 2px solid var(--ink); padding: 6px 12px 6px 6px; cursor: pointer; font: inherit; color: inherit; }
+  .coin-btn:hover:not([disabled]) { background: var(--gas-2); }
+  .coin-btn[disabled] { opacity: .45; cursor: default; }
+  .disc { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 700 .7rem/1 var(--serif); border: 2px solid var(--ink); background: radial-gradient(circle at 35% 30%, #fff, #c9ccd1 60%, #9da2a9); }
+  .disc.gold { background: radial-gradient(circle at 35% 30%, #fff6cf, #f2b630 60%, #b78512); }
+  .deal { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: .2em 0 .5em; }
+  .deal-btn { font: 600 .95rem/1.2 var(--serif); color: var(--ink); background: var(--white); border: 2px solid var(--ink); padding: 9px 8px; cursor: pointer; }
+  .deal-btn:hover { background: var(--gas-2); }
+  .deal-btn.seen::before { content: "✓ "; color: var(--violet); }
+  .deal-btn.now { background: var(--gas); }
+  .deal-say { font-size: clamp(1.02rem, 2.9vw, 1.18rem); }
+  @media (max-width: 560px) { .deal { grid-template-columns: 1fr; gap: 5px; } .deal-btn { font-size: .85rem; padding: 6px 5px; } .deal-say { font-size: .98rem; } }
+  .cry { font-family: var(--slab); font-size: clamp(1.25rem, 3.4vw, 1.6rem); color: var(--violet); margin: .1em 0 .2em; min-height: 1.2em; overflow-wrap: anywhere; line-height: 1.2; }
+  .bubble .tally { margin: 0 0 .2em; }
+  .bubble .feedback { margin: .2em 0 0; }
+
+  /* Cover */
+  .ransom { flex: none; display: flex; flex-wrap: nowrap; gap: 3px; margin: -.55em 0 .2em .2em; position: relative; z-index: 9; font-size: clamp(1.45rem, 6.4vw, 3.4rem); }
+  .ransom span { display: inline-block; padding: .07em .17em .1em; line-height: 1; box-shadow: 0 4px 10px rgba(0,0,0,.3); }
+  .r1 { background: var(--white); font-family: var(--slab); transform: rotate(-4deg); }
+  .r2 { background: var(--violet); color: var(--white); font-family: var(--serif); font-style: italic; font-weight: 600; transform: rotate(3deg); }
+  .r3 { background: var(--gas); font-family: var(--hand); font-weight: 700; transform: rotate(-2deg) translateY(.06em); }
+  .r4 { background: var(--ink); color: var(--paper); font-family: var(--slab); transform: rotate(2.5deg); }
+  .r5 { background: var(--violet-2); font-family: var(--serif); font-weight: 600; transform: rotate(-3deg); }
+  .act { font-family: var(--slab); font-size: clamp(1.3rem, 3.4vw, 1.8rem); margin: .1em 0 .3em; line-height: 1.1; }
+  .how { list-style: none; padding: 0; margin: 0 0 .9em; }
+  .how li { margin: .2em 0; padding-left: 1.6em; position: relative; }
+  .how li::before { content: "▸"; position: absolute; left: .2em; color: var(--violet); }
+
+  /* Cast cards */
+  .cast-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: .4em; }
+  .cast-grid.five { grid-template-columns: repeat(5, 1fr); }
+  .cast-grid.five .card .pic { height: clamp(90px, 24vh, 220px); }
+  .cast-grid.seven .card .pic { height: clamp(66px, 11vh, 120px); }
+  .cast-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .cast-grid.three .card .pic { height: clamp(100px, 32vh, 280px); }
+  .slipper { position: absolute; left: 0; top: 0; width: 46px; margin: -12px 0 0 -23px; z-index: 8; pointer-events: none; }
+  .slipper svg { display: block; width: 100%; height: auto; }
+  @media (max-width: 700px) { .cast-grid, .cast-grid.five { grid-template-columns: repeat(2, 1fr); } }
+  .card { background: var(--white); border: 2px solid var(--ink); padding: 10px 12px 12px; }
+  .card:nth-child(odd) { transform: rotate(-.6deg); }
+  .card:nth-child(even) { transform: rotate(.6deg); }
+  .card .pic { height: clamp(76px, 13vh, 140px); display: flex; justify-content: center; background: linear-gradient(#26313c, #3a4651); margin: -10px -12px 10px; border-bottom: 2px solid var(--ink); overflow: hidden; }
+  .card .pic svg { height: 112%; width: auto; margin-top: 6px; filter: drop-shadow(1.4px 0 0 #fff) drop-shadow(-1.4px 0 0 #fff) drop-shadow(0 1.4px 0 #fff) drop-shadow(0 -1.4px 0 #fff); }
+  .card h3 { font-family: var(--slab); font-weight: 400; font-size: 1.2rem; margin: 0 0 .2em; line-height: 1.1; }
+  .card p { font-size: .92rem; line-height: 1.35; margin: 0; }
+  .card .real { display: block; margin-top: .45em; font-family: var(--hand); font-size: 1.15rem; color: var(--violet); line-height: 1.15; }
+
+  /* Who said it */
+  .wsi { margin: .4em 0 0; }
+  .quote-bubble { position: relative; background: var(--white); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 14px 16px; font-size: clamp(1.1rem, 3.3vw, 1.3rem); line-height: 1.4; margin-bottom: 12px; }
+  .faces { display: flex; gap: 10px; flex-wrap: wrap; }
+  .face-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 104px; padding: 6px 6px 8px; background: var(--white); border: 2px solid var(--ink); cursor: pointer; font: 600 .8rem/1.15 var(--serif); color: var(--ink); text-align: center; }
+  .face-btn:hover:not([disabled]) { background: var(--gas-2); }
+  .face-btn[disabled] { cursor: default; }
+  .face-btn svg { width: 74px; height: 92px; background: linear-gradient(#26313c, #3a4651); }
+  .wsi .after { margin: .7em 0 0; padding-left: 12px; border-left: 3px solid var(--violet); font-size: .98rem; }
+  .wsi .after b { color: var(--violet); }
+
+  /* Quiz */
+  .q { margin: .4em 0 0; }
+  .q h3 { font-size: 1.1rem; margin: 0 0 .55em; }
+  .opts { display: grid; gap: 8px; }
+  .q .why { margin: .6em 0 0; font-size: .97rem; padding-left: 12px; border-left: 3px solid var(--violet); }
+  .score { font-family: var(--slab); font-size: 1.35rem; }
+  .sticker { background: var(--violet-2); padding: 14px 16px; margin: .8em 0; transform: rotate(.6deg); max-width: 52ch; }
+  .wrap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; align-items: start; }
+  @media (max-width: 700px) { .wrap-row { grid-template-columns: 1fr; } }
+  .score-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .score-row .score { margin: 0; }
+  .sticker.amber { background: var(--gas-2); transform: rotate(-.8deg); }
+  .sticker h3 { font-family: var(--slab); font-weight: 400; font-size: 1.25rem; margin: 0 0 .35em; line-height: 1.15; }
+  .sticker p:last-child { margin-bottom: 0; }
+  .source { font-size: .82rem; color: var(--ink-2); margin: .6em 0 0; }
+
+  /* Next button on pages without a stage */
+  .page-next { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 12px; }
+  .page-next .count { font-family: var(--hand); font-size: 1.25rem; }
+  .page-next .btn { font-size: 1.05rem; padding: .8em 1.3em; }
+
+  .flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 30; }
+  .flash.go { animation: flash .75s ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 6% { opacity: .85; } 15% { opacity: .08; } 26% { opacity: .55; } 100% { opacity: 0; } }
+
+  @media (max-width: 560px) {
+    body { font-size: 1rem; }
+    .stage-wrap { padding: 0; }
+    .js .page.active { height: 100vh; height: 100dvh; }
+    .page { padding: 12px 12px 14px; }
+    h2 { padding-right: 5.2rem; }
+    .folio { font-size: .95rem; top: 12px; right: 12px; }
+    .cast-grid { gap: 8px; }
+    .card { padding: 8px 10px 10px; }
+    .card .pic { height: 64px; margin: -8px -10px 8px; }
+    .card .pic svg { height: 260%; }
+    .cast-grid.five .card .pic, .cast-grid.seven .card .pic { height: 64px; }
+    .cast-grid.three { grid-template-columns: 1fr; }
+    .cast-grid.three .card { display: grid; grid-template-columns: 84px 1fr; column-gap: 10px; align-items: start; }
+    .cast-grid.three .card .pic { grid-row: span 2; height: 96px; margin: -8px 0 -10px -10px; border-bottom: 0; border-right: 2px solid var(--ink); }
+    .cast-grid.three .card .pic svg { height: 230%; }
+    .card h3 { font-size: .98rem; }
+    .card p { font-size: .8rem; }
+    .card .real { font-size: .95rem; }
+    .basket { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .coin-btn { padding: 5px 8px 5px 5px; gap: 6px; font-size: .85rem; }
+    .disc { width: 32px; height: 32px; font-size: .62rem; }
+    .cry { font-size: 1.25rem; }
+    .choice { padding: 7px 10px; font-size: .95rem; }
+    .tag { font-size: .5rem; padding: 2px 3px 1px; white-space: normal; width: max-content; max-width: 115%; text-align: center; line-height: 1.15; }
+    .controls .next { padding: .8em 1em; }
+    .face-btn { width: 92px; }
+    .card h3 { font-size: 1.05rem; }
+    .card p { font-size: .88rem; }
+  }
+  @media (max-width: 560px) and (max-height: 820px) {
+    .scene-page .setup { display: none; }
+  }
+  @media (max-height: 680px) {
+    .stage { min-height: 118px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js .page.active, .pup.pop, .burst.show { animation: none; }
+    .pup.speaking svg { animation: none; }
+    .rain { display: none; }
+    .stage.zap::after { display: none; }
+  }
+</style>
+</head>
+<body><a href="index.html" style="position:fixed; left:16px; bottom:16px; z-index:99999; background:#8b2e2e; color:#ffffff; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:bold; padding:12px 18px; border-radius:999px; box-shadow:0 3px 8px rgba(0,0,0,0.3);">&larr; All Acts</a>
+
+<script>document.documentElement.classList.add('js');</script>
+
+<div class="stage-wrap">
+<main class="zine">
+
+<!-- 1 COVER -->
+<section class="page" data-title="Cover">
+  <div class="stage static" data-static="higgins:happy eliza:upset pick:happy" aria-hidden="true"></div>
+  <h1 class="ransom" tabindex="-1" aria-label="Pygmalion"><span class="r1" aria-hidden="true">P</span><span class="r2" aria-hidden="true">y</span><span class="r3" aria-hidden="true">g</span><span class="r4" aria-hidden="true">M</span><span class="r5" aria-hidden="true">a</span><span class="r1" aria-hidden="true" style="transform:rotate(3deg)">L</span><span class="r2" aria-hidden="true" style="transform:rotate(-2deg)">i</span><span class="r3" aria-hidden="true" style="transform:rotate(4deg)">o</span><span class="r4" aria-hidden="true" style="transform:rotate(-3deg)">N</span></h1>
+  <p class="act">Act IV: After Midnight</p>
+  <p class="setup">Back at Wimpole Street, after a garden party, a dinner, and the opera. The big test is over. So why does Eliza look so miserable?</p>
+  <ul class="how">
+    <li>Tap the stage (or press Next) to make the puppets act out each scene.</li>
+    <li>The characters speak Bernard Shaw’s real lines. Confused? Tap <b>Plain English</b>.</li>
+    <li>Watch for the games along the way.</li>
+  </ul>
+  <div><button class="btn" type="button" data-go="1">Start the show</button></div>
+</section>
+
+<!-- 2 CAST -->
+<section class="page" data-title="Meet the cast">
+  <h2 tabindex="-1">Meet the cast</h2>
+  <p class="setup">Just three people tonight, in Higgins’s laboratory at midnight.</p>
+  <div class="cast-grid three" id="castGrid"></div>
+  <div class="page-next"><span></span><button class="btn" type="button" data-go="2">Next ▸</button></div>
+  <p class="folio">Act IV, page 2 of 10</p>
+</section>
+
+<!-- 3-8 SCENES -->
+<section class="page scene-page" data-title="Scene 1: Home from the party">
+  <h2 tabindex="-1"><span class="scene-no">Scene 1</span>Home from the party</h2>
+  <p class="setup">It’s midnight. Higgins, Pickering, and Eliza have just come home from a very big night out.</p>
+  <div class="theater" data-scene="home"></div>
+  <p class="folio">Act IV, page 3 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 2: Thank God it’s over">
+  <h2 tabindex="-1"><span class="scene-no">Scene 2 + game</span>Thank God it’s over</h2>
+  <p class="setup">The two men talk about the night. Keep an eye on Eliza while they do.</p>
+  <div class="theater" data-scene="over"></div>
+  <p class="folio">Act IV, page 4 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 3: The slippers fly">
+  <h2 tabindex="-1"><span class="scene-no">Scene 3 + game</span>The slippers fly</h2>
+  <p class="setup">The men have gone to bed. Eliza is alone, and furious. Then Higgins comes back for his slippers…</p>
+  <div class="theater" data-scene="slippers"></div>
+  <p class="folio">Act IV, page 5 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 4: What’s to become of me?">
+  <h2 tabindex="-1"><span class="scene-no">Scene 4 + game</span>What’s to become of me?</h2>
+  <p class="setup">Eliza finally says what’s really bothering her.</p>
+  <div class="theater" data-scene="become"></div>
+  <p class="folio">Act IV, page 6 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 5: Not for sale">
+  <h2 tabindex="-1"><span class="scene-no">Scene 5</span>Not for sale</h2>
+  <p class="setup">Higgins thinks he has the answer to Eliza’s problem. She doesn’t agree.</p>
+  <div class="theater" data-scene="sale"></div>
+  <p class="folio">Act IV, page 7 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 6: What belongs to me?">
+  <h2 tabindex="-1"><span class="scene-no">Scene 6 + game</span>What belongs to me?</h2>
+  <p class="setup">Before Higgins goes to bed, Eliza has one more question for him.</p>
+  <div class="theater" data-scene="mine"></div>
+  <p class="folio">Act IV, page 8 of 10</p>
+</section>
+
+<!-- 9 WHO SAID IT -->
+<section class="page" data-title="Who said it?">
+  <h2 tabindex="-1">Who said it?</h2>
+  <p class="setup">These are all real lines from Act IV. Tap the character you think said each one.</p>
+  <div id="wsi"></div>
+  <p class="score" id="wsiScore" aria-live="polite" hidden></p>
+  <div class="page-next"><span class="count" id="wsiCount"></span><button class="btn" type="button" id="wsiNext">Next ▸</button></div>
+  <p class="folio">Act IV, page 9 of 10</p>
+</section>
+
+<!-- 10 QUIZ -->
+<section class="page" data-title="Quick check">
+  <h2 tabindex="-1">Quick check</h2>
+  <p class="setup" id="quizIntro">Four questions about what happened. Pick an answer to see if you’re right.</p>
+
+  <div class="q">
+    <h3>1. Did Eliza pass the big test?</h3>
+    <div class="opts">
+      <button class="opt" type="button">No, someone figured out she was a flower girl.</button>
+      <button class="opt" type="button" data-right>Yes. She fooled everyone at the garden party, the dinner, and the opera.</button>
+      <button class="opt" type="button">They never went.</button>
+    </div>
+    <p class="why" hidden>Pickering tells Higgins he has “won your bet” and that “Eliza did the trick.” Notice who gets the credit.</p>
+  </div>
+  <div class="q">
+    <h3>2. Why is Eliza so angry?</h3>
+    <div class="opts">
+      <button class="opt" type="button" data-right>The men take all the credit and act like she’s a finished experiment.</button>
+      <button class="opt" type="button">She lost her slippers.</button>
+      <button class="opt" type="button">She hated the opera.</button>
+    </div>
+    <p class="why" hidden>Higgins says “Thank God it’s over!” and the whole thing “has been a bore.” Nobody thanks her.</p>
+  </div>
+  <div class="q">
+    <h3>3. What does Eliza ask Higgins before he goes to bed?</h3>
+    <div class="opts">
+      <button class="opt" type="button">For a raise.</button>
+      <button class="opt" type="button">To marry her.</button>
+      <button class="opt" type="button" data-right>Which things belong to her, so no one can accuse her of stealing.</button>
+    </div>
+    <p class="why" hidden>She gives back the rented jewels and the ring he bought her, and Higgins is furious.</p>
+  </div>
+  <div class="q">
+    <h3>4. How does Eliza feel after Higgins storms out?</h3>
+    <div class="opts">
+      <button class="opt" type="button" data-right>She smiles. She finally got a little of her own back.</button>
+      <button class="opt" type="button">She bursts into tears.</button>
+      <button class="opt" type="button">She calls Pickering for help.</button>
+    </div>
+    <p class="why" hidden>For the first time all night, she smiles. Then she goes looking for the ring.</p>
+  </div>
+
+  <div id="quizWrap" hidden>
+  <div class="score-row"><p class="score" id="quizScore" aria-live="polite"></p><button class="btn small ghost" type="button" id="quizReset">Replay Zine</button></div>
+  <div class="wrap-row">
+  <div class="sticker">
+    <h3>Act IV in one sentence</h3>
+    <p>Eliza wins Higgins’s bet for him, but when he and Pickering take all the credit, she fights back and asks what will become of her now.</p>
+  </div>
+  <div class="sticker amber">
+    <h3>Coming up in Act V</h3>
+    <p>The next morning, Higgins bursts into his mother’s house in a panic: Eliza has run away in the night! Where did she go?</p>
+  </div>
+  </div>
+  <p class="source">All character lines are quoted exactly from the public-domain text of <i>Pygmalion</i> (Project Gutenberg eBook #3825). Some scenes skip lines to keep things moving. The “Plain English” versions and narration are written for this zine.</p>
+  </div>
+  <div class="page-next"><span class="count" id="quizCount"></span><button class="btn" type="button" id="quizNext">Next ▸</button></div>
+  <p class="folio">Act IV, page 10 of 10</p>
+</section>
+
+</main>
+</div>
+
+<div class="flash" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= CHARACTERS ================= */
+  var CAST = {
+    higgins: { name: 'Higgins', c: '#2f6b8f', body: 'man', skin: '#eebf9a', hair: '#4a3020', coat: '#6a2333', pants: '#1d1d22', shirt: true },
+    eliza:   { name: 'Eliza', c: '#b04a6a', body: 'woman', skin: '#f3d3b5', hair: '#9a8562', dress: '#e4dcef', diamonds: true, cheeks: true, mood: 'upset' },
+    pick:    { name: 'Pickering', c: '#b08d57', body: 'man', skin: '#f1c8a6', hair: '#c4c4c4', coat: '#1d1d22', pants: '#1d1d22', shirt: true, mustache: '#d6d6d6' }
+  };
+  var INK = '#2a1d1a';
+
+  function face(m) {
+    var S = function (d, w) { return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w || 2.4) + '" stroke-linecap="round"/>'; };
+    var dots = '<circle cx="51" cy="58" r="2.7" fill="' + INK + '"/><circle cx="69" cy="58" r="2.7" fill="' + INK + '"/>';
+    switch (m) {
+      case 'happy': return S('M47.5 59 Q51 54.5 54.5 59 M65.5 59 Q69 54.5 72.5 59') + S('M46 48.5 Q50.5 46 55 48.5 M65 48.5 Q69.5 46 74 48.5', 2) + '<path d="M53 68 Q60 77 67 68 Z" fill="#7a2b2b"/>';
+      case 'upset': return dots + S('M46 52 L55 48 M74 52 L65 48', 2.2) + S('M54 73.5 Q60 67.5 66 73.5');
+      case 'angry': return dots + S('M46 47.5 L56 53 M74 47.5 L64 53', 2.7) + S('M54 72.5 Q60 69 66 72.5');
+      case 'shocked': return '<circle cx="51" cy="58" r="4" fill="#fff" stroke="' + INK + '" stroke-width="1.6"/><circle cx="69" cy="58" r="4" fill="#fff" stroke="' + INK + '" stroke-width="1.6"/><circle cx="51" cy="58" r="1.9" fill="' + INK + '"/><circle cx="69" cy="58" r="1.9" fill="' + INK + '"/>' + S('M46 46.5 Q50.5 43 55 46.5 M65 46.5 Q69.5 43 74 46.5', 2) + '<ellipse cx="60" cy="71.5" rx="3.6" ry="4.6" fill="#5a2424"/>';
+      case 'smug': return S('M47.5 58.5 L54.5 58.5 M65.5 58.5 L72.5 58.5', 2.8) + S('M46 51 L55 51', 2) + S('M65 48.5 Q69.5 45 74 48.5', 2) + S('M55 70 Q62 72.5 67 67.5');
+      default: return dots + S('M46 50.5 L55 50.5 M65 50.5 L74 50.5', 2) + S('M55 70 Q60 72.5 65 70');
+    }
+  }
+
+  function puppetSVG(id, mood, viewBox) {
+    var c = CAST[id], s = '';
+    s += '<svg viewBox="' + (viewBox || '0 0 120 250') + '" aria-hidden="true" focusable="false">';
+    s += '<rect x="57" y="200" width="6" height="52" fill="#9a7a50" stroke="#5c4428" stroke-width="1"/>';
+    if (c.body === 'man') {
+      s += '<ellipse cx="48" cy="217" rx="10" ry="4.5" fill="#141414"/><ellipse cx="72" cy="217" rx="10" ry="4.5" fill="#141414"/>';
+      s += '<path d="M42 150 L44 215 L56 215 L60 168 L64 215 L76 215 L78 150 Z" fill="' + c.pants + '"/>';
+      s += '<path d="M37 98 Q38 86 50 84 L70 84 Q82 86 83 98 L87 164 Q60 170 33 164 Z" fill="' + c.coat + '" stroke="rgba(0,0,0,.3)" stroke-width="1.5"/>';
+      s += '<path d="M52 85 L60 114 L68 85 Z" fill="#fbfbf9"/><path d="M55 88 L60 91 L65 88 L65 94 L60 91 L55 94 Z" fill="#111"/>';
+      s += '<circle cx="60" cy="126" r="1.7" fill="rgba(0,0,0,.35)"/><circle cx="60" cy="142" r="1.7" fill="rgba(0,0,0,.35)"/>';
+      s += '<path d="M39 99 Q31 128 34 152 M81 99 Q89 126 87 149" stroke="' + c.coat + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
+      s += '<circle cx="34" cy="155" r="5.5" fill="' + c.skin + '"/><circle cx="87" cy="152" r="5.5" fill="' + c.skin + '"/>';
+    } else {
+      s += '<ellipse cx="50" cy="218" rx="7" ry="3.5" fill="#141414"/><ellipse cx="70" cy="218" rx="7" ry="3.5" fill="#141414"/>';
+      s += '<path d="M40 130 Q34 180 22 216 L98 216 Q86 180 80 130 Z" fill="' + c.dress + '" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>';
+      s += '<path d="M42 92 Q44 84 52 83 L68 83 Q76 84 78 92 L80 134 L40 134 Z" fill="' + c.dress + '" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>';
+      s += '<path d="M48 83.5 Q60 100 72 83.5 Z" fill="' + c.skin + '"/>';
+      s += '<rect x="40" y="127" width="40" height="6" fill="rgba(0,0,0,.14)"/>';
+      s += '<path d="M41 96 Q33 122 37 146 M79 96 Q87 122 83 146" stroke="' + c.dress + '" stroke-width="10" fill="none" stroke-linecap="round"/>';
+      s += '<circle cx="37" cy="149" r="5" fill="#fbfbf9"/><circle cx="83" cy="149" r="5" fill="#fbfbf9"/>';
+      if (c.diamonds) s += '<g fill="#eef7ff" stroke="#8fb0c8" stroke-width=".7"><circle cx="51" cy="88" r="1.9"/><circle cx="55" cy="92" r="2"/><circle cx="60" cy="94" r="2.4"/><circle cx="65" cy="92" r="2"/><circle cx="69" cy="88" r="1.9"/></g>';
+    }
+    // head
+    var woman = c.body === 'woman';
+    s += '<rect x="55" y="74" width="10" height="13" fill="' + c.skin + '"/>';
+    if (woman) s += '<circle cx="60" cy="33" r="11" fill="' + c.hair + '"/>';
+    s += '<circle cx="37.5" cy="61" r="4.2" fill="' + c.skin + '"/><circle cx="82.5" cy="61" r="4.2" fill="' + c.skin + '"/>';
+    s += '<circle cx="60" cy="58" r="23" fill="' + c.skin + '"/>';
+    if (woman) s += '<path d="M37 60 Q35 34 60 34 Q85 34 83 60 Q80 44 60 43 Q40 44 37 60 Z" fill="' + c.hair + '"/>';
+    else s += '<path d="M37 57 Q37 33 60 32 Q83 33 83 57 Q79 43 60 42 Q41 43 37 57 Z" fill="' + c.hair + '"/>';
+    if (c.diamonds) s += '<path d="M47 38 L51 31 L55 36 L60 28 L65 36 L69 31 L73 38 Z" fill="#eef7ff" stroke="#8fb0c8" stroke-width="1"/>';
+    s += '<path d="M60 61 Q62.5 64.5 59.5 65.5" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="1.5" stroke-linecap="round"/>';
+    if (c.cheeks) s += '<circle cx="46" cy="66" r="3.6" fill="#e07a7a" opacity=".35"/><circle cx="74" cy="66" r="3.6" fill="#e07a7a" opacity=".35"/>';
+    s += '<g class="face">' + face(mood || c.mood || 'neutral') + '</g>';
+    if (c.mustache) s += '<path d="M50 66.5 Q55 62.5 60 65.5 Q65 62.5 70 66.5 Q65 69.5 60 67.5 Q55 69.5 50 66.5 Z" fill="' + c.mustache + '"/>';
+    s += '</svg>';
+    return s;
+  }
+
+  /* ================= SCENES =================
+     s = Shaw's exact words, t = plain English, n = narrator (plain English).
+     Lines are in the play's order; some lines in between are skipped. */
+  var SCENES = {
+    home: { start: [], cast: ['higgins', 'eliza', 'pick'], rain: false, lines: [
+      { who: 'nar', enter: ['eliza'], n: 'Midnight at Wimpole Street. Eliza comes in first, in a brilliant evening gown and diamonds. She looks tired and almost tragic. She sits down without a word.' },
+      { who: 'nar', enter: ['higgins', 'pick'], moods: { higgins: 'happy', pick: 'happy' }, n: 'Higgins and Pickering follow her in. Higgins tosses his coat and hat aside and puts on a comfy smoking jacket.' },
+      { who: 'pick', mood: 'neutral', s: "I say: Mrs. Pearce will row if we leave these things lying about in the drawing-room.", t: 'Mrs. Pearce will yell at us if we leave our things lying around in here.' },
+      { who: 'higgins', s: "Oh, chuck them over the bannisters into the hall. She’ll find them there in the morning and put them away all right. She’ll think we were drunk.", t: 'Oh, just toss them over the stair railing. She’ll find them in the morning and put them away. She’ll think we were drunk.' },
+      { who: 'higgins', mood: 'upset', s: "I wonder where the devil my slippers are!", t: 'Where on earth are my slippers?' },
+      { who: 'nar', moods: { eliza: 'angry' }, n: 'Eliza gives him a dark look. Then she leaves, comes back with his slippers, sets them in front of him, and sits down again. She still doesn’t say a word.' },
+      { who: 'higgins', mood: 'neutral', s: "Oh Lord! What an evening! What a crew! What a silly tomfoollery!", t: 'Oh, man. What a night! What a crowd! What a silly waste of time!' },
+      { who: 'higgins', mood: 'shocked', s: "Oh! they’re there, are they?", t: 'Oh! There they are. (He acts like the slippers just appeared on their own.)' },
+      { who: 'pick', mood: 'happy', star: true, s: "Well, I feel a bit tired. It’s been a long day. The garden party, a dinner party, and the opera! Rather too much of a good thing. But you’ve won your bet, Higgins. Eliza did the trick, and something to spare, eh?", t: 'I’m tired. Long day! A garden party, a dinner party, AND the opera. But you won your bet, Higgins! Eliza pulled it off, and then some.' },
+      { who: 'higgins', mood: 'happy', star: true, moods: { eliza: 'upset' }, s: "Thank God it’s over!", t: 'Thank God it’s over!' },
+      { who: 'nar', n: 'Eliza flinches as if she’s been hit. But the two men don’t even notice.' }
+    ]},
+    over: { start: ['higgins', 'eliza', 'pick'], cast: ['higgins', 'eliza', 'pick'], rain: false, lines: [
+      { who: 'pick', mood: 'neutral', s: "Were you nervous at the garden party? I was. Eliza didn’t seem a bit nervous.", t: 'Were you nervous at the garden party? I was. Eliza didn’t seem nervous at all.' },
+      { who: 'higgins', mood: 'smug', s: "Oh, she wasn’t nervous. I knew she’d be all right. No, it’s the strain of putting the job through all these months that has told on me.", t: 'Oh, she wasn’t nervous. I knew she’d be fine. No, it’s months of hard work that have worn ME out.' },
+      { who: 'higgins', mood: 'upset', s: "It was interesting enough at first, while we were at the phonetics; but after that I got deadly sick of it. If I hadn’t backed myself to do it I should have chucked the whole thing up two months ago. It was a silly notion: the whole thing has been a bore.", t: 'It was fun at first, while we worked on her speech. After that I got sick of it. If I hadn’t made that bet, I’d have quit two months ago. It was a silly idea. The whole thing has been boring.' },
+      { who: 'pick', mood: 'happy', s: "Oh come! the garden party was frightfully exciting. My heart began beating like anything.", t: 'Oh, come on! The garden party was super exciting. My heart was pounding.' },
+      { who: 'higgins', mood: 'upset', s: "No more artificial duchesses. The whole thing has been simple purgatory.", t: 'No more fake duchesses. The whole thing has been pure torture.' },
+      { who: 'pick', mood: 'happy', s: "Anyhow, it was a great success: an immense success. I was quite frightened once or twice because Eliza was doing it so well.", t: 'Anyway, it was a huge success. I was actually scared once or twice, because Eliza was doing it TOO well.' },
+      { who: 'pick', s: "You see, lots of the real people can’t do it at all: they’re such fools that they think style comes by nature to people in their position; and so they never learn.", t: 'A lot of real upper-class people can’t do it at all. They think good manners come naturally to rich people, so they never bother to learn.' },
+      { who: 'higgins', mood: 'smug', s: "However, it’s over and done with; and now I can go to bed at last without dreading tomorrow.", t: 'Anyway, it’s over. Now I can finally go to bed without dreading tomorrow.' },
+      { who: 'nar', moods: { eliza: 'angry' }, n: 'Shaw’s stage direction here: “Eliza’s beauty becomes murderous.”' },
+      { who: 'pick', mood: 'happy', s: "I think I shall turn in too. Still, it’s been a great occasion: a triumph for you. Good-night.", t: 'I’m going to bed too. Still, it was a great night: a triumph for YOU. Good night.' },
+      { who: 'game', focus: 'eliza', q: 'Has Higgins or Pickering thanked Eliza even once tonight?', opts: ['Yes, Pickering thanked her', 'No. They talk about her as if she isn’t even there', 'Yes, they both thanked her'], ok: 1, yes: '✓ Right. Not one thank-you. Tap Next.', no: '✗ Look again: they talk ABOUT her, never TO her. Tap Next.' },
+      { who: 'higgins', exit: ['pick'], mood: 'neutral', s: "Put out the lights, Eliza; and tell Mrs. Pearce not to make coffee for me in the morning: I’ll take tea.", t: 'Turn off the lights, Eliza. And tell Mrs. Pearce I want tea, not coffee, in the morning.' },
+      { who: 'nar', exit: ['higgins'], moods: { eliza: 'angry' }, n: 'The men go up to bed. The only words Higgins said to Eliza all night were an order.' }
+    ]},
+    slippers: { start: ['eliza'], cast: ['higgins', 'eliza'], rain: false, lines: [
+      { who: 'nar', moods: { eliza: 'angry' }, n: 'Eliza is alone. She tries to stay calm, but she can’t. She drops to the floor in a rage.' },
+      { who: 'higgins', enter: ['higgins'], mood: 'upset', s: "What the devil have I done with my slippers?", t: 'What on earth did I do with my slippers?' },
+      { who: 'cards', focus: 'eliza', prompt: 'Your turn: throw the slippers!', done: 'Direct hits! Tap Next.', cards: [
+        { label: 'Throw slipper #1', who: 'eliza', s: "There are your slippers.", t: 'There are your slippers!', mood: 'angry', fx: 'throw', at: 'higgins', burst: 'THWACK!', react: { higgins: 'shocked' } },
+        { label: 'Throw slipper #2', who: 'eliza', s: "And there.", t: 'And there!', mood: 'angry', fx: 'throw', at: 'higgins', burst: 'WHAP!', react: { higgins: 'shocked' } }
+      ]},
+      { who: 'eliza', mood: 'angry', s: "Take your slippers; and may you never have a day’s luck with them!", t: 'Take your slippers, and I hope they bring you nothing but bad luck!' },
+      { who: 'higgins', mood: 'shocked', s: "What on earth—!", t: 'What on earth—!' },
+      { who: 'higgins', s: "What’s the matter? Get up.", t: 'What’s the matter? Get up.' },
+      { who: 'eliza', star: true, s: "Nothing wrong—with YOU. I’ve won your bet for you, haven’t I? That’s enough for you. I don’t matter, I suppose.", t: 'Nothing’s wrong with YOU. I won your bet for you, didn’t I? That’s all you care about. I don’t matter, I guess.' },
+      { who: 'higgins', mood: 'angry', star: true, s: "YOU won my bet! You! Presumptuous insect! I won it.", t: 'YOU won my bet? You?! You arrogant little bug! I won it.' },
+      { who: 'higgins', s: "What did you throw those slippers at me for?", t: 'Why did you throw those slippers at me?' },
+      { who: 'eliza', mood: 'angry', s: "Because I wanted to smash your face. I’d like to kill you, you selfish brute. Why didn’t you leave me where you picked me out of—in the gutter?", t: 'Because I wanted to hit you in the face! I’m so angry I could scream, you selfish brute. Why didn’t you leave me in the gutter where you found me?' },
+      { who: 'eliza', s: "You thank God it’s all over, and that now you can throw me back again there, do you?", t: 'You thank God it’s all over, and now you can throw me back there, is that it?' },
+      { who: 'higgins', mood: 'smug', s: "The creature IS nervous, after all.", t: 'Huh. So the creature IS nervous, after all.' },
+      { who: 'nar', moods: { higgins: 'angry', eliza: 'angry' }, n: 'Eliza goes for his face with her nails! Higgins grabs her wrists.' },
+      { who: 'higgins', s: "Claws in, you cat. How dare you show your temper to me? Sit down and be quiet.", t: 'Put those claws away, you cat! How dare you lose your temper with me? Sit down and be quiet.' },
+      { who: 'nar', moods: { eliza: 'upset' }, n: 'He pushes her roughly into a chair. Eliza is crushed.' }
+    ]},
+    become: { start: ['higgins', 'eliza'], cast: ['higgins', 'eliza'], rain: false, lines: [
+      { who: 'eliza', mood: 'upset', star: true, s: "What’s to become of me? What’s to become of me?", t: 'What’s going to happen to me? What’s going to happen to me?' },
+      { who: 'higgins', mood: 'angry', s: "How the devil do I know what’s to become of you? What does it matter what becomes of you?", t: 'How should I know what will happen to you? What does it matter what happens to you?' },
+      { who: 'eliza', s: "You don’t care. I know you don’t care. You wouldn’t care if I was dead. I’m nothing to you—not so much as them slippers.", t: 'You don’t care. I know you don’t. You wouldn’t even care if I died. I mean nothing to you. Less than them slippers.' },
+      { who: 'game', focus: 'higgins', q: 'Eliza just said “them slippers.” What does Higgins do?', opts: ['Says he’s sorry', 'Corrects her grammar', 'Walks out of the room'], ok: 1 },
+      { who: 'higgins', mood: 'smug', star: true, s: "THOSE slippers.", t: 'THOSE slippers. (Yes, in the middle of all this, he corrects her grammar.)' },
+      { who: 'eliza', mood: 'upset', s: "Those slippers. I didn’t think it made any difference now.", t: 'Those slippers. I didn’t think it mattered anymore.' },
+      { who: 'higgins', mood: 'neutral', s: "May I ask whether you complain of your treatment here?", t: 'May I ask, do you have any complaints about how you were treated here?' },
+      { who: 'eliza', s: "No.", t: 'No.' },
+      { who: 'higgins', s: "I presume you don’t pretend that I have treated you badly.", t: 'I assume you’re not saying that I treated you badly.' },
+      { who: 'eliza', s: "No.", t: 'No.' },
+      { who: 'higgins', mood: 'smug', s: "It’s only imagination. Low spirits and nothing else. Nobody’s hurting you. Nothing’s wrong. You go to bed like a good girl and sleep it off. Have a little cry and say your prayers: that will make you comfortable.", t: 'It’s all in your head. You’re just in a bad mood. Nobody’s hurting you. Nothing’s wrong. Go to bed like a good girl and sleep it off. Have a little cry and say your prayers. You’ll feel better.' },
+      { who: 'eliza', mood: 'angry', star: true, s: "I heard YOUR prayers. “Thank God it’s all over!”", t: 'I heard YOUR prayers. “Thank God it’s all over!”' },
+      { who: 'higgins', mood: 'neutral', s: "Well, don’t you thank God it’s all over? Now you are free and can do what you like.", t: 'Well, aren’t you glad it’s over? Now you’re free to do whatever you want.' },
+      { who: 'eliza', mood: 'upset', star: true, s: "What am I fit for? What have you left me fit for? Where am I to go? What am I to do? What’s to become of me?", t: 'But what am I good for now? What have you made me fit for? Where am I supposed to go? What am I supposed to do? What will happen to me?' },
+      { who: 'nar', n: 'Remember Mrs. Higgins’s question in Act III? This is it: what happens to Eliza after the experiment?' }
+    ]},
+    sale: { start: ['higgins', 'eliza'], cast: ['higgins', 'eliza'], rain: false, lines: [
+      { who: 'higgins', mood: 'neutral', s: "Oh, that’s what’s worrying you, is it?", t: 'Oh, so THAT’S what’s bothering you?' },
+      { who: 'higgins', s: "I shouldn’t bother about it if I were you. I should imagine you won’t have much difficulty in settling yourself, somewhere or other, though I hadn’t quite realized that you were going away.", t: 'I wouldn’t worry about it. I’m sure you’ll land somewhere. Though I hadn’t realized you were planning to leave.' },
+      { who: 'nar', moods: { eliza: 'shocked' }, n: 'Eliza looks at him quickly. He doesn’t notice. He picks an apple from the piano and starts munching.' },
+      { who: 'higgins', mood: 'happy', s: "You might marry, you know.", t: 'You could get married, you know.' },
+      { who: 'higgins', s: "I daresay my mother could find some chap or other who would do very well—", t: 'I bet my mother could find some guy who would do just fine—' },
+      { who: 'eliza', mood: 'angry', s: "We were above that at the corner of Tottenham Court Road.", t: 'Even on my old street corner, we were too proud for that.' },
+      { who: 'higgins', mood: 'shocked', s: "What do you mean?", t: 'What do you mean?' },
+      { who: 'eliza', mood: 'upset', star: true, s: "I sold flowers. I didn’t sell myself. Now you’ve made a lady of me I’m not fit to sell anything else. I wish you’d left me where you found me.", t: 'I sold flowers. I never sold myself. But now that you’ve made me a lady, I can’t sell anything else. Marrying for money is all that’s left. I wish you’d left me where you found me.' },
+      { who: 'higgins', mood: 'angry', s: "Tosh, Eliza. Don’t you insult human relations by dragging all this cant about buying and selling into it. You needn’t marry the fellow if you don’t like him.", t: 'Nonsense, Eliza. Don’t insult love and marriage by talking about buying and selling. You don’t have to marry a guy if you don’t like him.' },
+      { who: 'eliza', mood: 'upset', s: "What else am I to do?", t: 'Then what else am I supposed to do?' },
+      { who: 'higgins', mood: 'happy', s: "Oh, lots of things. What about your old idea of a florist’s shop? Pickering could set you up in one: he’s lots of money.", t: 'Oh, lots of things. What about your old dream of a flower shop? Pickering could set you up in one. He’s got lots of money.' },
+      { who: 'higgins', mood: 'neutral', s: "By the way, I came down for something: I forget what it was.", t: 'By the way, I came down here for something. I forget what.' },
+      { who: 'eliza', mood: 'smug', s: "Your slippers.", t: 'Your slippers.' },
+      { who: 'higgins', s: "Oh yes, of course. You shied them at me.", t: 'Oh, right. You threw them at me.' }
+    ]},
+    mine: { start: ['higgins', 'eliza'], cast: ['higgins', 'eliza'], rain: false, lines: [
+      { who: 'eliza', mood: 'neutral', s: "Before you go, sir—", t: 'Before you go, sir—' },
+      { who: 'nar', moods: { higgins: 'shocked' }, n: 'Higgins is so surprised she called him “sir” that he drops his slippers.' },
+      { who: 'eliza', s: "Do my clothes belong to me or to Colonel Pickering?", t: 'Do my clothes belong to me, or to Colonel Pickering?' },
+      { who: 'higgins', mood: 'angry', s: "What the devil use would they be to Pickering?", t: 'What on earth would Pickering do with them?' },
+      { who: 'eliza', mood: 'smug', star: true, s: "He might want them for the next girl you pick up to experiment on.", t: 'He might want them for the next girl you two pick up to experiment on.' },
+      { who: 'higgins', mood: 'shocked', s: "Is THAT the way you feel towards us?", t: 'Is THAT how you feel about us?' },
+      { who: 'eliza', mood: 'neutral', s: "I want to know what I may take away with me. I don’t want to be accused of stealing.", t: 'I want to know what I can take with me. I don’t want to be accused of stealing.' },
+      { who: 'higgins', mood: 'upset', s: "Stealing! You shouldn’t have said that, Eliza. That shows a want of feeling.", t: 'Stealing?! You shouldn’t have said that, Eliza. That’s heartless.' },
+      { who: 'eliza', mood: 'upset', star: true, s: "I’m sorry. I’m only a common ignorant girl; and in my station I have to be careful. There can’t be any feelings between the like of you and the like of me.", t: 'Sorry. I’m just a common, uneducated girl, and people like me have to be careful. There can’t be any feelings between someone like you and someone like me.' },
+      { who: 'higgins', mood: 'angry', s: "You may take the whole damned houseful if you like. Except the jewels. They’re hired.", t: 'Take the whole darn house if you want! Except the jewels. Those are rented.' },
+      { who: 'cards', focus: 'eliza', prompt: 'Your turn: tap to give back what isn’t hers', done: 'That’s everything. Tap Next.', cards: [
+        { label: 'The jewels', who: 'eliza', s: "Will you take these to your room and keep them safe? I don’t want to run the risk of their being missing.", t: 'Can you take these to your room and keep them safe? I don’t want anyone saying they went missing.', mood: 'smug', react: { higgins: 'angry' } },
+        { label: 'The ring', who: 'eliza', s: "This ring isn’t the jeweler’s: it’s the one you bought me in Brighton. I don’t want it now.", t: 'This ring isn’t rented. It’s the one you bought me in Brighton. I don’t want it anymore.', mood: 'smug', react: { higgins: 'angry' } }
+      ]},
+      { who: 'nar', moods: { higgins: 'angry', eliza: 'shocked' }, n: 'Higgins hurls the ring into the fireplace and turns on her so fiercely that she covers her face.' },
+      { who: 'eliza', s: "Don’t you hit me.", t: 'Don’t you hit me.' },
+      { who: 'higgins', s: "Hit you! You infamous creature, how dare you accuse me of such a thing? It is you who have hit me. You have wounded me to the heart.", t: 'Hit you?! You terrible creature, how dare you accuse me of that? YOU’RE the one who hit ME. You’ve hurt me right to the heart.' },
+      { who: 'eliza', mood: 'smug', star: true, s: "I’m glad. I’ve got a little of my own back, anyhow.", t: 'Good. At least I got a little bit of revenge.' },
+      { who: 'higgins', mood: 'smug', s: "You have caused me to lose my temper: a thing that has hardly ever happened to me before. I prefer to say nothing more tonight. I am going to bed.", t: 'You made me lose my temper, which almost NEVER happens to me. I’d rather not say anything else tonight. I’m going to bed.' },
+      { who: 'eliza', s: "You’d better leave a note for Mrs. Pearce about the coffee; for she won’t be told by me.", t: 'You’d better leave Mrs. Pearce a note about the coffee yourself. I’m not telling her.' },
+      { who: 'higgins', mood: 'angry', s: "Damn Mrs. Pearce; and damn the coffee; and damn you; and damn my own folly in having lavished MY hard-earned knowledge and the treasure of my regard and intimacy on a heartless guttersnipe.", t: 'Forget Mrs. Pearce, forget the coffee, forget you, and forget how stupid I was to waste MY hard-earned knowledge and my friendship on a heartless street kid!' },
+      { who: 'nar', burst: 'SLAM!', exit: ['higgins'], n: 'He walks out with great dignity… and then ruins it by slamming the door.' },
+      { who: 'nar', moods: { eliza: 'happy' }, n: 'For the first time all night, Eliza smiles. She does a wild victory dance, imitating Higgins. Then she kneels down by the fireplace to look for the ring.' },
+      { who: 'nar', n: 'THE END of Act IV. Eliza won the bet for Higgins, and got no thanks at all. What will she do now? Find out in Act V.' }
+    ]}
+  };
+
+  /* ================= STAGE BUILDING ================= */
+  // Higgins's laboratory at midnight: same room as Act II, but the fire is out ("it is a summer night"),
+  // the electric light by the hearth is on, and there's a dessert stand with apples on the piano.
+  var BACKDROP = '<svg class="backdrop" viewBox="0 0 500 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+    '<defs><pattern id="wp" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#3b3746"/><rect width="9" height="28" fill="#433f50"/></pattern>' +
+    '<radialGradient id="lamp"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient></defs>' +
+    '<rect width="500" height="300" fill="url(#wp)"/>' +
+    '<rect y="207" width="500" height="93" fill="#2c2935"/><rect y="204" width="500" height="4" fill="#5a5566"/>' +
+    '<rect x="38" y="108" width="66" height="50" fill="#6b5433"/><rect x="43" y="113" width="56" height="40" fill="#d9d2bf"/><path d="M48 147 L62 127 L72 139 L81 130 L94 147 Z" fill="#8a8170"/>' +
+    '<rect x="150" y="100" width="38" height="50" fill="#6b5433"/><rect x="154" y="104" width="30" height="42" fill="#d9d2bf"/><circle cx="169" cy="119" r="6.5" fill="#8a8170"/><path d="M158 144 Q169 126 180 144 Z" fill="#8a8170"/>' +
+    '<rect x="404" y="110" width="60" height="42" fill="#6b5433"/><rect x="409" y="115" width="50" height="32" fill="#d9d2bf"/><path d="M413 142 L425 126 L434 136 L442 128 L455 142 Z" fill="#8a8170"/>' +
+    '<rect x="290" y="176" width="100" height="124" fill="#d6cfc0"/><rect x="282" y="168" width="116" height="9" fill="#e7e1d3"/>' +
+    '<path d="M308 300 L308 210 Q340 188 372 210 L372 300 Z" fill="#17120f"/><path d="M322 300 L330 286 L350 286 L358 300 Z" fill="#2a2420"/>' +
+    '<rect x="330" y="146" width="20" height="22" rx="3" fill="#6b5433"/><circle cx="340" cy="156" r="6.5" fill="#f4f1ea"/><path d="M340 156 V150 M340 156 V150.5" stroke="#1a1a1a" stroke-width="1.2"/>' +
+    '<path d="M16 182 L118 146 L126 150 L38 182 Z" fill="#1d1a21"/><path d="M8 182 L150 182 Q172 182 172 200 L172 214 L8 214 Z" fill="#141217"/>' +
+    '<rect x="22" y="214" width="7" height="86" fill="#141217"/><rect x="150" y="214" width="7" height="86" fill="#141217"/>' +
+    '<path d="M84 181 L108 181 L104 176 L88 176 Z" fill="#d9d2bf"/><rect x="94" y="176" width="4" height="5" fill="#d9d2bf"/><g fill="#c0392b"><circle cx="91" cy="172" r="4.2"/><circle cx="99" cy="171" r="4.2"/><circle cx="104" cy="174" r="3.6"/></g><path d="M99 167 L100 164" stroke="#3d6b3a" stroke-width="1.5"/>' +
+    '<rect x="418" y="196" width="78" height="8" fill="#5a3f25"/><rect x="424" y="204" width="6" height="96" fill="#5a3f25"/><rect x="484" y="204" width="6" height="96" fill="#5a3f25"/>' +
+    '<rect x="432" y="176" width="36" height="20" fill="#6b4a2f"/><path d="M452 178 L472 128 Q494 124 500 142 Z" fill="#f2b630" stroke="#b78512" stroke-width="2"/>' +
+    '<rect width="500" height="300" fill="#0d1226" opacity=".42"/>' +
+    '<circle cx="300" cy="150" r="70" fill="url(#lamp)"/><rect x="296" y="140" width="8" height="12" rx="2" fill="#f6d77c"/><rect x="298" y="152" width="4" height="16" fill="#6b5433"/>' +
+    '</svg>';
+
+  function stageShell(stage) {
+    stage.innerHTML = BACKDROP + '<div class="boards"></div><div class="lip"></div><div class="cast"></div><div class="burst"></div><div class="valance"></div><div class="curtain l"></div><div class="curtain r"></div>';
+  }
+
+  function makePup(id, name) {
+    var d = document.createElement('div');
+    d.className = 'pup off';
+    d.dataset.id = id;
+    d.dataset.mood = CAST[id].mood || 'neutral';
+    d.innerHTML = puppetSVG(id) + '<span class="tag">' + (name || CAST[id].name) + '</span>';
+    return d;
+  }
+
+  function fitCast(stage) {
+    var cast = stage.querySelector('.cast');
+    var vis = Array.prototype.filter.call(cast.children, function (p) { return !p.classList.contains('off'); });
+    var n = Math.max(vis.length, 1);
+    var H = stage.clientHeight, W = cast.clientWidth;
+    var h = Math.min(H * 0.8, 1.1 * W / (n * 0.48));
+    cast.style.height = h + 'px';
+    var ov = -(h * 0.48 * 0.05);
+    vis.forEach(function (p) { p.style.margin = '0 ' + ov + 'px'; });
+  }
+
+  // A slipper flies from one puppet to another (Act IV, Scene 3).
+  function throwSlipper(stage, from, to) {
+    if (!from || !to || !stage.animate) return;
+    var sr = stage.getBoundingClientRect(), fr = from.getBoundingClientRect(), tr = to.getBoundingClientRect();
+    var el = document.createElement('div');
+    el.className = 'slipper';
+    el.innerHTML = '<svg viewBox="0 0 60 30" aria-hidden="true"><path d="M4 20 Q4 8 20 8 L44 10 Q58 12 56 22 Q54 28 40 27 L12 27 Q4 27 4 20 Z" fill="#7a4a2a" stroke="#3b2414" stroke-width="2"/><path d="M30 10 Q40 4 50 12" fill="none" stroke="#3b2414" stroke-width="2"/></svg>';
+    stage.appendChild(el);
+    var x0 = fr.left + fr.width * 0.65 - sr.left, y0 = fr.top + fr.height * 0.5 - sr.top;
+    var x1 = tr.left + tr.width * 0.5 - sr.left, y1 = tr.top + tr.height * 0.22 - sr.top;
+    var a = el.animate([
+      { transform: 'translate(' + x0 + 'px,' + y0 + 'px) rotate(0deg)' },
+      { transform: 'translate(' + ((x0 + x1) / 2) + 'px,' + (Math.min(y0, y1) - 50) + 'px) rotate(-360deg)' },
+      { transform: 'translate(' + x1 + 'px,' + y1 + 'px) rotate(-720deg)' }
+    ], { duration: 600, easing: 'ease-in' });
+    a.onfinish = function () { el.remove(); };
+  }
+
+  // Static stage (cover): data-static="id:mood id:mood"
+  document.querySelectorAll('[data-static]').forEach(function (stage) {
+    stageShell(stage);
+    stage.dataset.static.split(' ').forEach(function (pair) {
+      var bits = pair.split(':'), p = makePup(bits[0]);
+      p.classList.remove('off');
+      if (bits[1]) p.querySelector('.face').innerHTML = face(bits[1]);
+      stage.querySelector('.cast').appendChild(p);
+    });
+    requestAnimationFrame(function () { fitCast(stage); });
+  });
+
+  // Cast page
+  var CAST_INFO = [
+    ['eliza', 'Eliza Doolittle', 'Tonight was her big test: a garden party, a dinner, and the opera. She’s wearing a gown and diamonds, but she isn’t smiling.', '', 'upset'],
+    ['higgins', 'Henry Higgins', 'Home from the big night and in his comfy smoking jacket. He’s mostly glad it’s over.', '', 'happy'],
+    ['pick', 'Colonel Pickering', 'Still in his evening suit. He thinks the night was a huge success, for Higgins.', '', 'happy']
+  ];
+  var grid = document.getElementById('castGrid');
+  CAST_INFO.forEach(function (c) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="pic">' + puppetSVG(c[0], c[4]) + '</div><h3>' + c[1] + '</h3><p>' + c[2] + '</p>' + (c[3] ? '<span class="real">' + c[3] + '</span>' : '');
+    grid.appendChild(card);
+  });
+
+  /* ================= SCENE ENGINE ================= */
+  function Theater(root, key) {
+    var sc = SCENES[key], self = this;
+    this.sc = sc; this.idx = 0; this.visited = false; this.answers = {}; this.deal = {}; this.dealLast = null; this.dealPlain = false;
+    root.innerHTML = '<div class="stage" aria-hidden="true"></div>' +
+      '<div class="bubble" aria-live="polite"></div>' +
+      '<div class="controls"><button class="btn ghost small back" type="button" aria-label="Previous line">◂</button>' +
+      '<span class="count"></span><button class="btn ghost small replay" type="button" hidden>Replay</button>' +
+      '<button class="btn next" type="button">Next ▸</button></div>';
+    this.stage = root.querySelector('.stage');
+    this.bubble = root.querySelector('.bubble');
+    this.backBtn = root.querySelector('.back');
+    this.nextBtn = root.querySelector('.next');
+    this.replayBtn = root.querySelector('.replay');
+    this.count = root.querySelector('.count');
+    stageShell(this.stage);
+    var castEl = this.stage.querySelector('.cast');
+    this.pups = {};
+    sc.cast.forEach(function (id) { var p = makePup(id); self.pups[id] = p; castEl.appendChild(p); });
+    this.stage.insertAdjacentHTML('beforeend', '<span class="tap-hint">tap ▸</span>');
+
+    this.stage.addEventListener('click', function (e) { if (!e.target.closest('button')) self.forward(); });
+    this.nextBtn.addEventListener('click', function () { self.forward(); });
+    this.backBtn.addEventListener('click', function () { self.back(); });
+    this.replayBtn.addEventListener('click', function () { self.answers = {}; self.deal = {}; self.dealLast = null; self.dealPlain = false; self.go(0, true); });
+  }
+
+  Theater.prototype.state = function (upto) {
+    var sc = this.sc, st = { on: {}, mood: {}, name: {}, rain: sc.rain };
+    sc.start.forEach(function (id) { st.on[id] = true; });
+    sc.cast.forEach(function (id) { st.mood[id] = CAST[id].mood || 'neutral'; st.name[id] = (sc.names && sc.names[id]) || CAST[id].name; });
+    for (var i = 0; i <= upto; i++) {
+      var L = sc.lines[i];
+      (L.enter || []).forEach(function (id) { st.on[id] = true; });
+      (L.exit || []).forEach(function (id) { delete st.on[id]; });
+      if (L.mood && CAST[L.who]) st.mood[L.who] = L.mood;
+      if (L.moods) for (var k in L.moods) st.mood[k] = L.moods[k];
+      if (L.rename) for (var r in L.rename) st.name[r] = L.rename[r];
+      if (L.rain !== undefined) st.rain = L.rain;
+    }
+    return st;
+  };
+
+  Theater.prototype.blocked = function () {
+    var L = this.sc.lines[this.idx];
+    if (L.who === 'game') return this.answers[this.idx] === undefined;
+    if (L.who === 'cards') return Object.keys(this.deal).length < L.cards.length;
+    return false;
+  };
+
+  Theater.prototype.forward = function () {
+    if (this.blocked()) return;
+    if (this.idx < this.sc.lines.length - 1) this.go(this.idx + 1, true);
+    else showPage(cur + 1, true);
+  };
+  Theater.prototype.back = function () {
+    if (this.idx > 0) this.go(this.idx - 1, false);
+    else showPage(cur - 1, true);
+  };
+  Theater.prototype.enter = function () {
+    this.measure();
+    if (!this.visited) { this.visited = true; this.go(0, true); } else this.go(this.idx, false);
+  };
+
+  // Size the speech bubble for the scene's longest line, so the stage doesn't jump between lines.
+  Theater.prototype.measure = function () {
+    var self = this, real = this.bubble, m = real.cloneNode(false), max = 0;
+    var saveA = this.answers, saveIdx = this.idx, saveD = this.deal, saveL = this.dealLast, saveP = this.dealPlain;
+    m.removeAttribute('aria-live');
+    m.style.cssText = 'position:absolute;visibility:hidden;left:0;top:0;min-height:0;width:' + real.offsetWidth + 'px';
+    real.parentNode.appendChild(m);
+    this.bubble = m;
+    this.sc.lines.forEach(function (L, i) {
+      self.idx = i;
+      if (L.who === 'cards') {
+        self.deal = {}; L.cards.forEach(function (d, k) { self.deal[k] = true; });
+        L.cards.forEach(function (d, k) {
+          [false, true].forEach(function (plain) { self.dealLast = k; self.dealPlain = plain; self.renderBubble(L, self.state(i)); max = Math.max(max, m.offsetHeight); });
+        });
+        self.deal = saveD; self.dealLast = saveL; self.dealPlain = saveP;
+        return;
+      }
+      if (L.who === 'game') { self.answers = {}; self.answers[i] = (L.ok + 1) % L.opts.length; }
+      self.renderBubble(L, self.state(i));
+      max = Math.max(max, m.offsetHeight);
+      var tr = m.querySelector('.tr');
+      if (tr) { tr.click(); max = Math.max(max, m.offsetHeight); }
+      self.answers = saveA;
+    });
+    this.idx = saveIdx; this.bubble = real; m.remove();
+    real.style.minHeight = max + 'px';
+  };
+
+  Theater.prototype.go = function (i, withFx) {
+    var self = this, sc = this.sc, L = sc.lines[i];
+    this.idx = i;
+    var st = this.state(i);
+    var speaker = CAST[L.who] ? L.who : (L.focus || null);
+    sc.cast.forEach(function (id) {
+      var p = self.pups[id], wasOff = p.classList.contains('off');
+      p.classList.toggle('off', !st.on[id]);
+      if (wasOff && st.on[id] && withFx && !reduced) { p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
+      if (p.dataset.mood !== st.mood[id]) { p.dataset.mood = st.mood[id]; p.querySelector('.face').innerHTML = face(st.mood[id]); }
+      var tag = p.querySelector('.tag');
+      if (tag.textContent !== st.name[id]) { tag.textContent = st.name[id]; p.classList.toggle('renamed', st.name[id] !== CAST[id].name); }
+      p.classList.toggle('speaking', id === speaker);
+      p.classList.toggle('dim', !!speaker && id !== speaker);
+    });
+    this.stage.classList.toggle('dry', !st.rain);
+    var hint = this.stage.querySelector('.tap-hint');
+    if (hint) hint.style.display = i === 0 ? '' : 'none';
+
+    // effects only when moving forward
+    var burst = this.stage.querySelector('.burst');
+    burst.classList.remove('show');
+    if (withFx) {
+      if (L.burst) { burst.textContent = L.burst; void burst.offsetWidth; burst.classList.add('show'); }
+      if (L.fx === 'lightning' && !reduced) {
+        this.stage.classList.remove('zap'); void this.stage.offsetWidth; this.stage.classList.add('zap');
+        flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+      }
+    } else if (L.burst) { burst.textContent = L.burst; burst.classList.add('show'); }
+
+    this.renderBubble(L, st);
+    var last = i === sc.lines.length - 1;
+    this.count.textContent = (i + 1) + ' / ' + sc.lines.length;
+    this.replayBtn.hidden = !last;
+    this.nextBtn.textContent = last ? (cur === pages.length - 1 ? 'The end' : 'Next page ▸') : 'Next ▸';
+    this.nextBtn.disabled = this.blocked();
+    fitCast(this.stage);
+    requestAnimationFrame(function () { self.aimTail(speaker); });
+  };
+
+  Theater.prototype.aimTail = function (id) {
+    if (!id || !this.pups[id]) return;
+    var pr = this.pups[id].getBoundingClientRect(), br = this.bubble.getBoundingClientRect();
+    var x = pr.left + pr.width / 2 - br.left;
+    x = Math.max(26, Math.min(br.width - 26, x));
+    this.bubble.style.setProperty('--tx', x + 'px');
+  };
+
+  Theater.prototype.renderBubble = function (L, st) {
+    var self = this, b = this.bubble;
+    b.className = 'bubble';
+    var html = '';
+    if (CAST[L.who]) {
+      html += '<span class="chip" style="--c:' + CAST[L.who].c + '"><i></i>' + st.name[L.who] + '</span>';
+      html += '<p class="say">' + L.s + '</p>';
+      html += '<div class="tools"><button class="btn small ghost tr" type="button">Plain English</button>' + (L.star ? '<span class="key">★ Key line</span>' : '') + '</div>';
+      b.innerHTML = html;
+      var tr = b.querySelector('.tr'), say = b.querySelector('.say');
+      tr.addEventListener('click', function () {
+        var plain = !say.classList.contains('plain');
+        say.classList.toggle('plain', plain);
+        say.textContent = plain ? L.t : L.s;
+        tr.textContent = plain ? 'Shaw’s words' : 'Plain English';
+      });
+    } else if (L.who === 'nar') {
+      b.classList.add('nar');
+      b.innerHTML = '<span class="chip"><i style="background:var(--gas)"></i>Narrator</span><p class="say">' + L.n + '</p>';
+    } else if (L.who === 'game') {
+      b.classList.add('game');
+      var ans = this.answers[this.idx];
+      html = '<span class="chip"><i style="background:var(--violet)"></i>Your guess</span><p class="say">' + L.q + '</p><div class="choices">';
+      L.opts.forEach(function (o, k) {
+        var cls = '';
+        if (ans !== undefined) { if (k === L.ok) cls = ' right'; else if (k === ans) cls = ' wrong'; }
+        html += '<button class="choice' + cls + '" type="button" data-k="' + k + '"' + (ans !== undefined ? ' disabled' : '') + '>' + o + '</button>';
+      });
+      html += '</div>';
+      if (ans !== undefined) html += '<p class="feedback">' + (ans === L.ok ? (L.yes || '✓ You got it! Tap Next to see it happen.') : (L.no || '✗ Not quite. Tap Next to find out.')) + '</p>';
+      b.innerHTML = html;
+      b.querySelectorAll('.choice').forEach(function (btn) {
+        btn.addEventListener('click', function () { self.answers[self.idx] = +btn.dataset.k; self.go(self.idx, false); self.nextBtn.focus(); });
+      });
+    } else if (L.who === 'cards') {
+      b.classList.add('game');
+      html = '<span class="chip"><i style="background:var(--violet)"></i>' + L.prompt + '</span><div class="deal">';
+      L.cards.forEach(function (d, k) {
+        html += '<button class="deal-btn' + (self.deal[k] ? ' seen' : '') + (k === self.dealLast ? ' now' : '') + '" type="button" data-k="' + k + '">' + d.label + '</button>';
+      });
+      html += '</div>';
+      if (self.dealLast !== null) {
+        var d = L.cards[self.dealLast];
+        html += '<p class="say deal-say' + (self.dealPlain ? ' plain' : '') + '"><b>' + st.name[d.who] + ':</b> ' + (self.dealPlain ? d.t : '“' + d.s + '”') + '</p>';
+        html += '<div class="tools"><button class="btn small ghost tr" type="button">' + (self.dealPlain ? 'Shaw’s words' : 'Plain English') + '</button>' +
+          (Object.keys(self.deal).length === L.cards.length ? '<span class="feedback">' + (L.done || 'That’s everyone. Tap Next.') + '</span>' : '') + '</div>';
+      }
+      b.innerHTML = html;
+      b.querySelectorAll('.deal-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var k = +btn.dataset.k, c = L.cards[k];
+          self.deal[k] = true; self.dealLast = k; self.dealPlain = false;
+          Object.keys(self.pups).forEach(function (id) {
+            var p = self.pups[id];
+            p.classList.toggle('speaking', id === c.who);
+            p.classList.toggle('dim', id !== c.who);
+          });
+          if (c.mood) { var pp = self.pups[c.who]; pp.dataset.mood = c.mood; pp.querySelector('.face').innerHTML = face(c.mood); }
+          if (c.react) for (var rid in c.react) { var rp = self.pups[rid]; if (rp) { rp.dataset.mood = c.react[rid]; rp.querySelector('.face').innerHTML = face(c.react[rid]); } }
+          if (c.burst) { var bu = self.stage.querySelector('.burst'); bu.classList.remove('show'); bu.textContent = c.burst; void bu.offsetWidth; bu.classList.add('show'); }
+          if (c.fx === 'throw' && !reduced) throwSlipper(self.stage, self.pups[c.who], self.pups[c.at]);
+          self.renderBubble(L, st);
+          self.nextBtn.disabled = self.blocked();
+          var again = self.bubble.querySelector('.deal-btn[data-k="' + k + '"]'); if (again) again.focus();
+        });
+      });
+      var tr = b.querySelector('.tr');
+      if (tr) tr.addEventListener('click', function () { self.dealPlain = !self.dealPlain; self.renderBubble(L, st); });
+    }
+  };
+
+  var theaters = [];
+  document.querySelectorAll('.theater').forEach(function (el) { var t = new Theater(el, el.dataset.scene); el._t = t; theaters.push(t); });
+  function relayout() {
+    document.querySelectorAll('.page.active .stage').forEach(fitCast);
+    var t = activeTheater(); if (t) { t.measure(); t.go(t.idx, false); }
+  }
+  window.addEventListener('resize', relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  /* ================= WHO SAID IT ================= */
+  var WSI = [
+    { q: "Thank God it’s over!", a: 'higgins', opts: ['pick', 'higgins', 'eliza'], t: 'Thank God it’s over!', where: 'Higgins, the moment they get home, while Eliza sits right there (Scene 1).' },
+    { q: "I’ve won your bet for you, haven’t I?", a: 'eliza', opts: ['higgins', 'pick', 'eliza'], t: 'I won your bet for you, didn’t I?', where: 'Eliza, right after throwing the slippers (Scene 3).' },
+    { q: "Still, it’s been a great occasion: a triumph for you.", a: 'pick', opts: ['pick', 'eliza', 'higgins'], t: 'It was a great night: a triumph for YOU.', where: 'Pickering, giving Higgins all the credit (Scene 2).' },
+    { q: "THOSE slippers.", a: 'higgins', opts: ['eliza', 'higgins', 'pick'], t: 'THOSE slippers.', where: 'Higgins, correcting her grammar in the middle of a fight (Scene 4).' },
+    { q: "I sold flowers. I didn’t sell myself.", a: 'eliza', opts: ['eliza', 'pick', 'higgins'], t: 'I sold flowers. I never sold myself.', where: 'Eliza, when Higgins suggests she just get married (Scene 5).' },
+    { q: "Eliza didn’t seem a bit nervous.", a: 'pick', opts: ['higgins', 'eliza', 'pick'], t: 'Eliza didn’t seem nervous at all.', where: 'Pickering, talking about Eliza as if she weren’t in the room (Scene 2).' }
+  ];
+  var wsiEl = document.getElementById('wsi'), wsiScore = document.getElementById('wsiScore'), wsiDone = 0, wsiRight = 0;
+  var wsiNext = document.getElementById('wsiNext'), wsiCount = document.getElementById('wsiCount'), wIdx = 0, wsiBoxes = [];
+  function showW() {
+    var last = wIdx === wsiBoxes.length - 1;
+    wsiBoxes.forEach(function (b, i) { b.hidden = i !== wIdx; });
+    wsiNext.disabled = !wsiBoxes[wIdx].dataset.done;
+    wsiNext.textContent = last ? 'Next page ▸' : 'Next ▸';
+    wsiCount.textContent = 'Question ' + (wIdx + 1) + ' of ' + wsiBoxes.length;
+    wsiScore.hidden = !(last && wsiDone === wsiBoxes.length);
+  }
+  WSI.forEach(function (w, i) {
+    var box = document.createElement('div');
+    box.className = 'wsi';
+    wsiBoxes.push(box);
+    var h = '<div class="quote-bubble">“<span class="v">' + w.q + '</span>”</div><div class="faces">';
+    w.opts.forEach(function (id) { h += '<button class="face-btn" type="button" data-id="' + id + '">' + puppetSVG(id, null, '22 0 76 96') + '<span>' + CAST_INFO.filter(function (c) { return c[0] === id; })[0][1] + '</span></button>'; });
+    h += '</div><p class="after" hidden></p>';
+    box.innerHTML = h;
+    wsiEl.appendChild(box);
+    box.querySelectorAll('.face-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ok = btn.dataset.id === w.a;
+        box.querySelectorAll('.face-btn').forEach(function (x) { x.disabled = true; if (x.dataset.id === w.a) x.classList.add('right'); });
+        if (!ok) btn.classList.add('wrong');
+        var after = box.querySelector('.after');
+        after.hidden = false;
+        after.innerHTML = '<b>' + (ok ? '✓ Yes!' : '✗ Nope.') + '</b> ' + w.where + (w.t ? ' In plain English: “' + w.t + '”' : '');
+        box.dataset.done = '1';
+        wsiDone++; if (ok) wsiRight++;
+        if (wsiDone === WSI.length) wsiScore.textContent = 'You got ' + wsiRight + ' out of ' + WSI.length + '.';
+        showW(); wsiNext.focus();
+      });
+    });
+  });
+  wsiNext.addEventListener('click', function () {
+    if (!wsiBoxes[wIdx].dataset.done) return;
+    if (wIdx < wsiBoxes.length - 1) { wIdx++; showW(); } else showPage(cur + 1, true);
+  });
+  showW();
+  wsiEl.closest('.page')._deck = {
+    forward: function () { wsiNext.click(); },
+    back: function () { if (wIdx > 0) { wIdx--; showW(); } else showPage(cur - 1); }
+  };
+
+  /* ================= QUIZ ================= */
+  var qs = Array.prototype.slice.call(document.querySelectorAll('.q')), quizScore = document.getElementById('quizScore'), quizReset = document.getElementById('quizReset'), qDone = 0, qRight = 0;
+  var quizWrap = document.getElementById('quizWrap'), quizNext = document.getElementById('quizNext'), quizCount = document.getElementById('quizCount'), quizIntro = document.getElementById('quizIntro'), qIdx = 0, quizOver = false;
+  function showQ() {
+    qs.forEach(function (q, i) { q.hidden = quizOver || i !== qIdx; });
+    quizWrap.hidden = !quizOver; quizIntro.hidden = quizOver; quizNext.hidden = quizOver;
+    quizNext.disabled = !qs[qIdx].dataset.done;
+    quizNext.textContent = qIdx === qs.length - 1 ? 'See my score ▸' : 'Next ▸';
+    quizCount.textContent = quizOver ? '' : 'Question ' + (qIdx + 1) + ' of ' + qs.length;
+  }
+  qs.forEach(function (q) {
+    var opts = q.querySelectorAll('.opt');
+    opts.forEach(function (o) {
+      o.addEventListener('click', function () {
+        if (q.dataset.done) return;
+        q.dataset.done = '1'; qDone++;
+        var ok = o.hasAttribute('data-right'); if (ok) qRight++;
+        opts.forEach(function (x) { x.disabled = true; if (x.hasAttribute('data-right')) { x.classList.add('right'); x.insertAdjacentHTML('afterbegin', '<span class="mark">✓ </span>'); } });
+        if (!ok) { o.classList.add('wrong'); o.insertAdjacentHTML('afterbegin', '<span class="mark">✗ </span>'); }
+        q.querySelector('.why').hidden = false;
+        showQ(); quizNext.focus();
+      });
+    });
+  });
+  quizNext.addEventListener('click', function () {
+    if (!qs[qIdx].dataset.done) return;
+    if (qIdx < qs.length - 1) qIdx++;
+    else { quizOver = true; quizScore.textContent = 'You got ' + qRight + ' out of ' + qs.length + '.' + (qRight === qs.length ? ' Higgins would be impressed.' : ''); }
+    showQ();
+  });
+  quizReset.addEventListener('click', function () {
+    // Start the whole zine over: reload without the page number, which clears every answer and opens the cover.
+    location.replace(location.href.split('#')[0]);
+  });
+  showQ();
+  qs[0].closest('.page')._deck = {
+    forward: function () { if (!quizNext.hidden) quizNext.click(); },
+    back: function () { if (quizOver) { quizOver = false; showQ(); } else if (qIdx > 0) { qIdx--; showQ(); } else showPage(cur - 1); }
+  };
+
+  /* ================= PAGE NAVIGATION ================= */
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var cur = 0;
+  var flash = document.querySelector('.flash');
+
+  function activeTheater() { var el = pages[cur].querySelector('.theater'); return el ? el._t : null; }
+
+  function showPage(i, moveFocus) {
+    if (i < 0 || i >= pages.length) return;
+    pages[cur].classList.remove('active');
+    cur = i;
+    pages[cur].classList.add('active');
+    pages[cur].scrollTop = 0;
+    try { history.replaceState(null, '', '#p' + (cur + 1)); } catch (e) {}
+    window.scrollTo(0, 0);
+    pages[cur].querySelectorAll('.stage.static').forEach(fitCast);
+    var t = activeTheater(); if (t) t.enter();
+    if (moveFocus) { var h = pages[cur].querySelector('h1, h2'); if (h) h.focus({ preventScroll: true }); }
+  }
+
+  document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click', function () { showPage(+b.dataset.go, true); }); });
+
+  function step(dir) {
+    var t = activeTheater(), d = pages[cur]._deck;
+    if (t) { if (dir > 0) t.forward(); else t.back(); }
+    else if (d) { if (dir > 0) d.forward(); else d.back(); }
+    else showPage(cur + dir);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+  });
+  var sx = null, sy = null;
+  document.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) step(dx < 0 ? 1 : -1);
+    sx = sy = null;
+  }, { passive: true });
+
+  var m = /^#p(\d+)$/.exec(location.hash);
+  pages[0].classList.add('active');
+  showPage(m ? Math.min(Math.max(+m[1] - 1, 0), pages.length - 1) : 0);
+})();
+</script>
+</body>
+</html>

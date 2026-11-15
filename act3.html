@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pygmalion: Act III Zine</title>
+<meta name="description" content="A playable toy-theater zine for Act III of Bernard Shaw's Pygmalion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Caveat:wght@500;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #1e2730;
+    --paper: #f4f3ef;
+    --paper-2: #e3e1d9;
+    --white: #fbfbf9;
+    --ink: #1a1a1a;
+    --ink-2: #4a4a4a;
+    --violet: #5b2c8f;
+    --violet-2: #e4d8f2;
+    --gas: #f2b630;
+    --gas-2: #fbe7b0;
+    --right: #2f6b35;
+    --right-2: #dcefdc;
+    --wrong: #8a2b20;
+    --wrong-2: #f6dad6;
+    --slab: "Alfa Slab One", Rockwell, "Roboto Slab", Georgia, serif;
+    --serif: "Literata", Georgia, "Times New Roman", serif;
+    --hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; color: var(--ink); font-family: var(--serif); font-size: 1.0625rem; line-height: 1.55;
+    background: var(--night) radial-gradient(ellipse at 90% -10%, rgba(242,182,48,.14), transparent 55%) fixed;
+  }
+  .stage-wrap { padding: 8px; display: flex; justify-content: center; }
+  .zine { width: 100%; max-width: 980px; }
+
+  .page {
+    position: relative; margin-bottom: 28px;
+    background-color: var(--paper);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    padding: 14px clamp(14px, 2.5vw, 26px) 16px;
+    box-shadow: 0 24px 50px rgba(0,0,0,.45);
+  }
+  .js .page { display: none; margin-bottom: 0; }
+  .js .page.active { display: flex; flex-direction: column; height: calc(100vh - 16px); height: calc(100dvh - 16px); overflow-y: auto; animation: pageIn .35s ease-out; }
+  @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+  h1, h2 { font-family: var(--slab); font-weight: 400; line-height: 1.05; margin: 0 0 .35em; }
+  h2 { font-size: clamp(1.45rem, 3.4vw, 2.1rem); padding-right: 6.5rem; margin-bottom: .25em; }
+  h2:focus, h1:focus { outline: none; }
+  .scene-no { display: inline; font-family: var(--hand); font-size: .8em; color: var(--violet); margin-right: .35em; }
+  p { margin: 0 0 1em; max-width: 62ch; }
+  .setup { font-size: 1.05rem; margin-bottom: .7em; }
+  .hint { font-family: var(--hand); font-size: 1.3rem; line-height: 1.25; color: var(--violet); }
+  .folio { position: absolute; top: 14px; right: clamp(14px, 2.5vw, 26px); margin: 0; font-family: var(--hand); font-size: 1.1rem; color: var(--ink-2); }
+
+  .btn { font: 600 1rem/1.1 var(--serif); background: var(--ink); color: var(--paper); border: 0; padding: .75em 1.1em; cursor: pointer; border-radius: 2px; }
+  .btn:hover:not([disabled]) { background: var(--violet); }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  .btn.ghost:hover:not([disabled]) { background: var(--gas-2); }
+  .btn.small { font-size: .88rem; padding: .5em .8em; }
+  .btn[disabled] { opacity: .3; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--gas); outline-offset: 3px; }
+
+  /* ---------- Toy theater ---------- */
+  .stage {
+    position: relative; flex: 1 1 auto; min-height: 160px; max-height: 520px; overflow: hidden;
+    background: linear-gradient(#121920, #26313c 70%); border: 3px solid var(--ink);
+    cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .stage.static { cursor: default; }
+  .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .boards { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; background: repeating-linear-gradient(90deg, #7a5536 0 42px, #694729 42px 44px); }
+  .lip { position: absolute; left: 0; right: 0; bottom: 0; height: 9%; background: #4b3621; border-top: 3px solid #2e2116; z-index: 3; }
+  .valance { position: absolute; top: 0; left: 0; right: 0; height: 8%; background: var(--violet); z-index: 7; }
+  .valance::after { content: ""; position: absolute; left: 0; right: 0; bottom: -11px; height: 12px; background: radial-gradient(circle at 50% 0, var(--violet) 10.5px, transparent 11.5px) 0 0 / 24px 12px repeat-x; }
+  .curtain { position: absolute; top: 0; bottom: 0; width: 6%; z-index: 7; background: linear-gradient(90deg, #3a1a5e, #6d3ca6 50%, #3a1a5e); }
+  .curtain.l { left: 0; } .curtain.r { right: 0; }
+  .rain { position: absolute; inset: -20% -10%; transform: rotate(9deg); pointer-events: none; z-index: 6; transition: opacity .8s; }
+  .rain i { position: absolute; top: -25%; width: 1.5px; height: 18%; background: linear-gradient(rgba(205,220,232,0), rgba(205,220,232,.8)); animation: fall linear infinite; }
+  @keyframes fall { to { transform: translateY(750%); } }
+  .stage.dry .rain { opacity: 0; }
+  .cast { position: absolute; left: 7%; right: 7%; bottom: 0; height: 80%; display: flex; justify-content: space-evenly; align-items: flex-end; z-index: 4; }
+  .pup { position: relative; height: 100%; flex: none; transition: transform .3s ease, filter .3s ease; transform-origin: 50% 100%; }
+  .pup svg { height: 100%; width: auto; display: block;
+    filter: drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(0 6px 5px rgba(0,0,0,.45)); }
+  .pup.off { display: none; }
+  .pup.dim { filter: brightness(.68) saturate(.7); }
+  .pup.speaking { transform: translateY(-4%) scale(1.07); z-index: 2; }
+  .pup.speaking svg { animation: bob 1s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-2.5%); } }
+  .pup.pop { animation: popin .45s ease-out; }
+  @keyframes popin { from { transform: translateY(45%); } to { transform: none; } }
+  .tag { position: absolute; left: 50%; bottom: 1.5%; transform: translateX(-50%); white-space: nowrap; z-index: 5;
+    background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); padding: 3px 5px 2px;
+    font: 600 .6rem/1 var(--serif); letter-spacing: .06em; text-transform: uppercase; }
+  .pup.renamed .tag { background: var(--gas); }
+  .burst { position: absolute; top: 15%; left: 50%; z-index: 8; display: none; pointer-events: none;
+    font-family: var(--slab); font-size: clamp(1.5rem, 6vw, 2.7rem); line-height: 1;
+    background: var(--gas); color: var(--ink); padding: .12em .45em .18em; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    transform: translateX(-50%) rotate(-6deg); }
+  .burst.show { display: block; animation: burst .5s ease-out; }
+  @keyframes burst { 0% { transform: translateX(-50%) rotate(-6deg) scale(.3); } 70% { transform: translateX(-50%) rotate(-6deg) scale(1.15); } 100% { transform: translateX(-50%) rotate(-6deg) scale(1); } }
+  .stage.zap::after { content: ""; position: absolute; inset: 0; background: #fff; z-index: 9; pointer-events: none; animation: flash .75s ease-out forwards; }
+  .tap-hint { position: absolute; right: 8%; top: 12%; z-index: 8; font-family: var(--hand); font-size: 1.25rem; color: var(--gas); pointer-events: none; }
+
+  .theater { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+
+  /* Speech bubble */
+  .bubble { position: relative; background: var(--white); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink);
+    flex: none; margin-top: 16px; padding: 12px 16px 10px; min-height: 6em; }
+  .bubble::before { content: ""; position: absolute; top: -15px; left: var(--tx, 50%); width: 24px; height: 24px; background: var(--white);
+    border-left: 3px solid var(--ink); border-top: 3px solid var(--ink); transform: translateX(-50%) rotate(45deg); }
+  .bubble.nar { background: var(--gas-2); }
+  .bubble.nar::before, .bubble.game::before { display: none; }
+  .bubble.game { background: var(--violet-2); }
+  .chip { display: inline-flex; align-items: center; gap: 7px; margin-bottom: .45em; font: 600 .78rem/1 var(--serif); letter-spacing: .07em; text-transform: uppercase; }
+  .chip i { width: 12px; height: 12px; border-radius: 50%; background: var(--c, var(--ink)); border: 1.5px solid var(--ink); }
+  .say { font-size: clamp(1.1rem, 3.3vw, 1.3rem); line-height: 1.45; margin: 0 0 .6em; max-width: none; }
+  .say.plain { color: var(--violet); }
+  .tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .key { font-family: var(--hand); font-size: 1.25rem; color: var(--violet); }
+  .controls { flex: none; display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .controls .count { flex: 1; text-align: center; font-family: var(--hand); font-size: 1.25rem; }
+  .controls .next { font-size: 1.05rem; padding: .8em 1.3em; }
+
+  .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: .3em 0 .5em; }
+  .choice, .opt { text-align: left; font: inherit; color: inherit; background: var(--white); border: 2px solid var(--ink); padding: 9px 13px; cursor: pointer; }
+  .choice:hover:not([disabled]), .opt:hover:not([disabled]) { background: var(--gas-2); }
+  .choice[disabled], .opt[disabled] { cursor: default; }
+  .right { background: var(--right-2) !important; border-color: var(--right) !important; }
+  .wrong { background: var(--wrong-2) !important; border-color: var(--wrong) !important; }
+  .mark { font-weight: 700; }
+  .feedback { margin: .3em 0 0; font-weight: 600; }
+
+  .basket { display: flex; flex-wrap: wrap; gap: 8px; margin: .4em 0; }
+  .coin-btn { display: flex; align-items: center; gap: 9px; background: var(--white); border: 2px solid var(--ink); padding: 6px 12px 6px 6px; cursor: pointer; font: inherit; color: inherit; }
+  .coin-btn:hover:not([disabled]) { background: var(--gas-2); }
+  .coin-btn[disabled] { opacity: .45; cursor: default; }
+  .disc { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 700 .7rem/1 var(--serif); border: 2px solid var(--ink); background: radial-gradient(circle at 35% 30%, #fff, #c9ccd1 60%, #9da2a9); }
+  .disc.gold { background: radial-gradient(circle at 35% 30%, #fff6cf, #f2b630 60%, #b78512); }
+  .deal { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: .2em 0 .5em; }
+  .deal-btn { font: 600 .95rem/1.2 var(--serif); color: var(--ink); background: var(--white); border: 2px solid var(--ink); padding: 9px 8px; cursor: pointer; }
+  .deal-btn:hover { background: var(--gas-2); }
+  .deal-btn.seen::before { content: "✓ "; color: var(--violet); }
+  .deal-btn.now { background: var(--gas); }
+  .deal-say { font-size: clamp(1.02rem, 2.9vw, 1.18rem); }
+  @media (max-width: 560px) { .deal { grid-template-columns: 1fr; gap: 5px; } .deal-btn { font-size: .85rem; padding: 6px 5px; } .deal-say { font-size: .98rem; } }
+  .cry { font-family: var(--slab); font-size: clamp(1.25rem, 3.4vw, 1.6rem); color: var(--violet); margin: .1em 0 .2em; min-height: 1.2em; overflow-wrap: anywhere; line-height: 1.2; }
+  .bubble .tally { margin: 0 0 .2em; }
+  .bubble .feedback { margin: .2em 0 0; }
+
+  /* Cover */
+  .ransom { flex: none; display: flex; flex-wrap: nowrap; gap: 3px; margin: -.55em 0 .2em .2em; position: relative; z-index: 9; font-size: clamp(1.45rem, 6.4vw, 3.4rem); }
+  .ransom span { display: inline-block; padding: .07em .17em .1em; line-height: 1; box-shadow: 0 4px 10px rgba(0,0,0,.3); }
+  .r1 { background: var(--white); font-family: var(--slab); transform: rotate(-4deg); }
+  .r2 { background: var(--violet); color: var(--white); font-family: var(--serif); font-style: italic; font-weight: 600; transform: rotate(3deg); }
+  .r3 { background: var(--gas); font-family: var(--hand); font-weight: 700; transform: rotate(-2deg) translateY(.06em); }
+  .r4 { background: var(--ink); color: var(--paper); font-family: var(--slab); transform: rotate(2.5deg); }
+  .r5 { background: var(--violet-2); font-family: var(--serif); font-weight: 600; transform: rotate(-3deg); }
+  .act { font-family: var(--slab); font-size: clamp(1.3rem, 3.4vw, 1.8rem); margin: .1em 0 .3em; line-height: 1.1; }
+  .how { list-style: none; padding: 0; margin: 0 0 .9em; }
+  .how li { margin: .2em 0; padding-left: 1.6em; position: relative; }
+  .how li::before { content: "▸"; position: absolute; left: .2em; color: var(--violet); }
+
+  /* Cast cards */
+  .cast-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: .4em; }
+  .cast-grid.five { grid-template-columns: repeat(5, 1fr); }
+  .cast-grid.five .card .pic { height: clamp(90px, 24vh, 220px); }
+  .cast-grid.seven .card .pic { height: clamp(66px, 11vh, 120px); }
+  @media (max-width: 700px) { .cast-grid, .cast-grid.five { grid-template-columns: repeat(2, 1fr); } }
+  .card { background: var(--white); border: 2px solid var(--ink); padding: 10px 12px 12px; }
+  .card:nth-child(odd) { transform: rotate(-.6deg); }
+  .card:nth-child(even) { transform: rotate(.6deg); }
+  .card .pic { height: clamp(76px, 13vh, 140px); display: flex; justify-content: center; background: linear-gradient(#26313c, #3a4651); margin: -10px -12px 10px; border-bottom: 2px solid var(--ink); overflow: hidden; }
+  .card .pic svg { height: 112%; width: auto; margin-top: 6px; filter: drop-shadow(1.4px 0 0 #fff) drop-shadow(-1.4px 0 0 #fff) drop-shadow(0 1.4px 0 #fff) drop-shadow(0 -1.4px 0 #fff); }
+  .card h3 { font-family: var(--slab); font-weight: 400; font-size: 1.2rem; margin: 0 0 .2em; line-height: 1.1; }
+  .card p { font-size: .92rem; line-height: 1.35; margin: 0; }
+  .card .real { display: block; margin-top: .45em; font-family: var(--hand); font-size: 1.15rem; color: var(--violet); line-height: 1.15; }
+
+  /* Who said it */
+  .wsi { margin: .4em 0 0; }
+  .quote-bubble { position: relative; background: var(--white); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 14px 16px; font-size: clamp(1.1rem, 3.3vw, 1.3rem); line-height: 1.4; margin-bottom: 12px; }
+  .faces { display: flex; gap: 10px; flex-wrap: wrap; }
+  .face-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 104px; padding: 6px 6px 8px; background: var(--white); border: 2px solid var(--ink); cursor: pointer; font: 600 .8rem/1.15 var(--serif); color: var(--ink); text-align: center; }
+  .face-btn:hover:not([disabled]) { background: var(--gas-2); }
+  .face-btn[disabled] { cursor: default; }
+  .face-btn svg { width: 74px; height: 92px; background: linear-gradient(#26313c, #3a4651); }
+  .wsi .after { margin: .7em 0 0; padding-left: 12px; border-left: 3px solid var(--violet); font-size: .98rem; }
+  .wsi .after b { color: var(--violet); }
+
+  /* Quiz */
+  .q { margin: .4em 0 0; }
+  .q h3 { font-size: 1.1rem; margin: 0 0 .55em; }
+  .opts { display: grid; gap: 8px; }
+  .q .why { margin: .6em 0 0; font-size: .97rem; padding-left: 12px; border-left: 3px solid var(--violet); }
+  .score { font-family: var(--slab); font-size: 1.35rem; }
+  .sticker { background: var(--violet-2); padding: 14px 16px; margin: .8em 0; transform: rotate(.6deg); max-width: 52ch; }
+  .wrap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; align-items: start; }
+  @media (max-width: 700px) { .wrap-row { grid-template-columns: 1fr; } }
+  .score-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .score-row .score { margin: 0; }
+  .sticker.amber { background: var(--gas-2); transform: rotate(-.8deg); }
+  .sticker h3 { font-family: var(--slab); font-weight: 400; font-size: 1.25rem; margin: 0 0 .35em; line-height: 1.15; }
+  .sticker p:last-child { margin-bottom: 0; }
+  .source { font-size: .82rem; color: var(--ink-2); margin: .6em 0 0; }
+
+  /* Next button on pages without a stage */
+  .page-next { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 12px; }
+  .page-next .count { font-family: var(--hand); font-size: 1.25rem; }
+  .page-next .btn { font-size: 1.05rem; padding: .8em 1.3em; }
+
+  .flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 30; }
+  .flash.go { animation: flash .75s ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 6% { opacity: .85; } 15% { opacity: .08; } 26% { opacity: .55; } 100% { opacity: 0; } }
+
+  @media (max-width: 560px) {
+    body { font-size: 1rem; }
+    .stage-wrap { padding: 0; }
+    .js .page.active { height: 100vh; height: 100dvh; }
+    .page { padding: 12px 12px 14px; }
+    h2 { padding-right: 5.2rem; }
+    .folio { font-size: .95rem; top: 12px; right: 12px; }
+    .cast-grid { gap: 8px; }
+    .card { padding: 8px 10px 10px; }
+    .card .pic { height: 64px; margin: -8px -10px 8px; }
+    .card .pic svg { height: 260%; }
+    .cast-grid.five .card .pic, .cast-grid.seven .card .pic { height: 64px; }
+    .card h3 { font-size: .98rem; }
+    .card p { font-size: .8rem; }
+    .card .real { font-size: .95rem; }
+    .basket { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .coin-btn { padding: 5px 8px 5px 5px; gap: 6px; font-size: .85rem; }
+    .disc { width: 32px; height: 32px; font-size: .62rem; }
+    .cry { font-size: 1.25rem; }
+    .choice { padding: 7px 10px; font-size: .95rem; }
+    .tag { font-size: .5rem; padding: 2px 3px 1px; white-space: normal; width: max-content; max-width: 115%; text-align: center; line-height: 1.15; }
+    .controls .next { padding: .8em 1em; }
+    .face-btn { width: 92px; }
+    .card h3 { font-size: 1.05rem; }
+    .card p { font-size: .88rem; }
+  }
+  @media (max-width: 560px) and (max-height: 820px) {
+    .scene-page .setup { display: none; }
+  }
+  @media (max-height: 680px) {
+    .stage { min-height: 118px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .js .page.active, .pup.pop, .burst.show { animation: none; }
+    .pup.speaking svg { animation: none; }
+    .rain { display: none; }
+    .stage.zap::after { display: none; }
+  }
+</style>
+</head>
+<body><a href="index.html" style="position:fixed; left:16px; bottom:16px; z-index:99999; background:#8b2e2e; color:#ffffff; text-decoration:none; font-family:Georgia, 'Times New Roman', serif; font-size:16px; font-weight:bold; padding:12px 18px; border-radius:999px; box-shadow:0 3px 8px rgba(0,0,0,0.3);">&larr; All Acts</a>
+
+<script>document.documentElement.classList.add('js');</script>
+
+<div class="stage-wrap">
+<main class="zine">
+
+<!-- 1 COVER -->
+<section class="page" data-title="Cover">
+  <div class="stage static" data-static="higgins:smug eliza:happy mrsh:neutral" aria-hidden="true"></div>
+  <h1 class="ransom" tabindex="-1" aria-label="Pygmalion"><span class="r1" aria-hidden="true">P</span><span class="r2" aria-hidden="true">y</span><span class="r3" aria-hidden="true">g</span><span class="r4" aria-hidden="true">M</span><span class="r5" aria-hidden="true">a</span><span class="r1" aria-hidden="true" style="transform:rotate(3deg)">L</span><span class="r2" aria-hidden="true" style="transform:rotate(-2deg)">i</span><span class="r3" aria-hidden="true" style="transform:rotate(4deg)">o</span><span class="r4" aria-hidden="true" style="transform:rotate(-3deg)">N</span></h1>
+  <p class="act">Act III: The First Test</p>
+  <p class="setup">Months of lessons later, Higgins brings Eliza to his mother’s fancy afternoon party. It’s her first test in front of real high-society guests. What could go wrong?</p>
+  <ul class="how">
+    <li>Tap the stage (or press Next) to make the puppets act out each scene.</li>
+    <li>The characters speak Bernard Shaw’s real lines. Confused? Tap <b>Plain English</b>.</li>
+    <li>Watch for the games along the way.</li>
+  </ul>
+  <div><button class="btn" type="button" data-go="1">Start the show</button></div>
+</section>
+
+<!-- 2 CAST -->
+<section class="page" data-title="Meet the cast">
+  <h2 tabindex="-1">Meet the cast</h2>
+  <p class="setup">Some of these faces may look familiar.</p>
+  <div class="cast-grid seven" id="castGrid"></div>
+  <div class="page-next"><span></span><button class="btn" type="button" data-go="2">Next ▸</button></div>
+  <p class="folio">Act III, page 2 of 10</p>
+</section>
+
+<!-- 3-8 SCENES -->
+<section class="page scene-page" data-title="Scene 1: Mom’s at-home day">
+  <h2 tabindex="-1"><span class="scene-no">Scene 1</span>Mom’s at-home day</h2>
+  <p class="setup">It’s Mrs. Higgins’s “at-home day,” when friends drop by. She told her son NOT to come.</p>
+  <div class="theater" data-scene="athome"></div>
+  <p class="folio">Act III, page 3 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 2: Guess who">
+  <h2 tabindex="-1"><span class="scene-no">Scene 2 + game</span>Guess who</h2>
+  <p class="setup">The guests arrive. A few of them might look familiar.</p>
+  <div class="theater" data-scene="guests"></div>
+  <p class="folio">Act III, page 4 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 3: The grand entrance">
+  <h2 tabindex="-1"><span class="scene-no">Scene 3</span>The grand entrance</h2>
+  <p class="setup">Eliza arrives for her big test. Remember Higgins’s rule: only talk about the weather and everyone’s health.</p>
+  <div class="theater" data-scene="entrance"></div>
+  <p class="folio">Act III, page 5 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 4: The new small talk">
+  <h2 tabindex="-1"><span class="scene-no">Scene 4 + game</span>The new small talk</h2>
+  <p class="setup">The weather went fine. Then Mrs. Eynsford Hill brings up everyone’s health…</p>
+  <div class="theater" data-scene="smalltalk"></div>
+  <p class="folio">Act III, page 6 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 5: Shock waves">
+  <h2 tabindex="-1"><span class="scene-no">Scene 5 + game</span>Shock waves</h2>
+  <p class="setup">Eliza is gone, but her last word is still ringing in everyone’s ears.</p>
+  <div class="theater" data-scene="shock"></div>
+  <p class="folio">Act III, page 7 of 10</p>
+</section>
+
+<section class="page scene-page" data-title="Scene 6: A live doll">
+  <h2 tabindex="-1"><span class="scene-no">Scene 6</span>A live doll</h2>
+  <p class="setup">The guests have gone. Now Mrs. Higgins has some hard questions for her son and Pickering.</p>
+  <div class="theater" data-scene="doll"></div>
+  <p class="folio">Act III, page 8 of 10</p>
+</section>
+
+<!-- 9 WHO SAID IT -->
+<section class="page" data-title="Who said it?">
+  <h2 tabindex="-1">Who said it?</h2>
+  <p class="setup">These are all real lines from Act III. Tap the character you think said each one.</p>
+  <div id="wsi"></div>
+  <p class="score" id="wsiScore" aria-live="polite" hidden></p>
+  <div class="page-next"><span class="count" id="wsiCount"></span><button class="btn" type="button" id="wsiNext">Next ▸</button></div>
+  <p class="folio">Act III, page 9 of 10</p>
+</section>
+
+<!-- 10 QUIZ -->
+<section class="page" data-title="Quick check">
+  <h2 tabindex="-1">Quick check</h2>
+  <p class="setup" id="quizIntro">Four questions about what happened. Pick an answer to see if you’re right.</p>
+
+  <div class="q">
+    <h3>1. Where does Higgins bring Eliza for her first test?</h3>
+    <div class="opts">
+      <button class="opt" type="button">Buckingham Palace.</button>
+      <button class="opt" type="button" data-right>His mother’s at-home day.</button>
+      <button class="opt" type="button">The flower market.</button>
+    </div>
+    <p class="why" hidden>Mrs. Higgins’s afternoon visiting day, which she told Higgins not to come to!</p>
+  </div>
+  <div class="q">
+    <h3>2. What two topics is Eliza supposed to stick to?</h3>
+    <div class="opts">
+      <button class="opt" type="button" data-right>The weather and everyone’s health.</button>
+      <button class="opt" type="button">Fashion and food.</button>
+      <button class="opt" type="button">Books and music.</button>
+    </div>
+    <p class="why" hidden>Higgins thought those two topics would be “safe.” His mother disagreed.</p>
+  </div>
+  <div class="q">
+    <h3>3. What goes wrong at the party?</h3>
+    <div class="opts">
+      <button class="opt" type="button">She forgets how to say her H’s.</button>
+      <button class="opt" type="button">She trips over the piano.</button>
+      <button class="opt" type="button" data-right>She sounds perfect but talks about murder, gin, and a stolen hat.</button>
+    </div>
+    <p class="why" hidden>Higgins fixed HOW she speaks, but not WHAT she says, just like he warned in Scene 1.</p>
+  </div>
+  <div class="q">
+    <h3>4. What worries Mrs. Higgins most?</h3>
+    <div class="opts">
+      <button class="opt" type="button" data-right>What will happen to Eliza after the experiment is over.</button>
+      <button class="opt" type="button">That Eliza will steal from her.</button>
+      <button class="opt" type="button">That Freddy will marry Clara.</button>
+    </div>
+    <p class="why" hidden>Eliza will have a lady’s manners, but no lady’s money and no way to earn a living.</p>
+  </div>
+
+  <div id="quizWrap" hidden>
+  <div class="score-row"><p class="score" id="quizScore" aria-live="polite"></p><button class="btn small ghost" type="button" id="quizReset">Replay Zine</button></div>
+  <div class="wrap-row">
+  <div class="sticker">
+    <h3>Act III in one sentence</h3>
+    <p>At Mrs. Higgins’s party, Eliza sounds perfect but says shocking things, and Mrs. Higgins asks the big question: what will happen to Eliza when the experiment is over?</p>
+  </div>
+  <div class="sticker amber">
+    <h3>Coming up in Act IV</h3>
+    <p>It’s midnight, after a garden party, a dinner, and the opera. Did Higgins win his bet? And how does Eliza feel about it?</p>
+  </div>
+  </div>
+  <p class="source">All character lines are quoted exactly from the public-domain text of <i>Pygmalion</i> (Project Gutenberg eBook #3825). Some scenes skip lines to keep things moving. The “Plain English” versions and narration are written for this zine.</p>
+  </div>
+  <div class="page-next"><span class="count" id="quizCount"></span><button class="btn" type="button" id="quizNext">Next ▸</button></div>
+  <p class="folio">Act III, page 10 of 10</p>
+</section>
+
+</main>
+</div>
+
+<div class="flash" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ================= CHARACTERS ================= */
+  var CAST = {
+    mrsh:    { name: 'Mrs. Higgins', c: '#5f7f5a', body: 'woman', skin: '#efc6a6', hair: '#bdbdbd', dress: '#5f7f5a', collar: true, bare: true, cheeks: true },
+    higgins: { name: 'Higgins', c: '#2f6b8f', body: 'man', skin: '#eebf9a', hair: '#4a3020', hairStyle: 'short', coat: '#1d1d22', pants: '#1d1d22', shirt: 'tie' },
+    pick:    { name: 'Pickering', c: '#b08d57', body: 'man', skin: '#f1c8a6', hair: '#c4c4c4', hairStyle: 'short', coat: '#7d6e5c', pants: '#3a3530', shirt: 'tie', mustache: '#d6d6d6' },
+    eliza:   { name: 'Eliza', c: '#b04a6a', body: 'woman', skin: '#f3d3b5', hair: '#9a8562', dress: '#b04a6a', shawl: '#f3dbe3', hat: 'picture', cheeks: true },
+    mom:     { name: 'Mrs. Eynsford Hill', c: '#8f3a6a', body: 'woman', skin: '#f0c8a8', hair: '#a3a3a3', dress: '#6d3a5e', shawl: '#c9a0b8', cheeks: true },
+    clara:   { name: 'Clara', c: '#3a7aa8', body: 'woman', skin: '#f4d2b6', hair: '#5a3a24', dress: '#8fb3c9', cheeks: true },
+    fred:    { name: 'Freddy', c: '#3f7a4a', body: 'man', skin: '#f3d0b0', hair: '#c8a24a', hairStyle: 'short', hat: 'top', coat: '#1d1d22', pants: '#1d1d22', shirt: true }
+  };
+  var INK = '#2a1d1a';
+
+  function face(m) {
+    var S = function (d, w) { return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w || 2.4) + '" stroke-linecap="round"/>'; };
+    var dots = '<circle cx="51" cy="58" r="2.7" fill="' + INK + '"/><circle cx="69" cy="58" r="2.7" fill="' + INK + '"/>';
+    switch (m) {
+      case 'happy': return S('M47.5 59 Q51 54.5 54.5 59 M65.5 59 Q69 54.5 72.5 59') + S('M46 48.5 Q50.5 46 55 48.5 M65 48.5 Q69.5 46 74 48.5', 2) + '<path d="M53 68 Q60 77 67 68 Z" fill="#7a2b2b"/>';
+      case 'upset': return dots + S('M46 52 L55 48 M74 52 L65 48', 2.2) + S('M54 73.5 Q60 67.5 66 73.5');
+      case 'angry': return dots + S('M46 47.5 L56 53 M74 47.5 L64 53', 2.7) + S('M54 72.5 Q60 69 66 72.5');
+      case 'shocked': return '<circle cx="51" cy="58" r="4" fill="#fff" stroke="' + INK + '" stroke-width="1.6"/><circle cx="69" cy="58" r="4" fill="#fff" stroke="' + INK + '" stroke-width="1.6"/><circle cx="51" cy="58" r="1.9" fill="' + INK + '"/><circle cx="69" cy="58" r="1.9" fill="' + INK + '"/>' + S('M46 46.5 Q50.5 43 55 46.5 M65 46.5 Q69.5 43 74 46.5', 2) + '<ellipse cx="60" cy="71.5" rx="3.6" ry="4.6" fill="#5a2424"/>';
+      case 'smug': return S('M47.5 58.5 L54.5 58.5 M65.5 58.5 L72.5 58.5', 2.8) + S('M46 51 L55 51', 2) + S('M65 48.5 Q69.5 45 74 48.5', 2) + S('M55 70 Q62 72.5 67 67.5');
+      default: return dots + S('M46 50.5 L55 50.5 M65 50.5 L74 50.5', 2) + S('M55 70 Q60 72.5 65 70');
+    }
+  }
+
+  function puppetSVG(id, mood, viewBox) {
+    var c = CAST[id], s = '';
+    s += '<svg viewBox="' + (viewBox || '0 0 120 250') + '" aria-hidden="true" focusable="false">';
+    s += '<rect x="57" y="200" width="6" height="52" fill="#9a7a50" stroke="#5c4428" stroke-width="1"/>';
+    if (c.body === 'man') {
+      s += '<ellipse cx="48" cy="217" rx="10" ry="4.5" fill="#141414"/><ellipse cx="72" cy="217" rx="10" ry="4.5" fill="#141414"/>';
+      s += '<path d="M42 150 L44 215 L56 215 L60 168 L64 215 L76 215 L78 150 Z" fill="' + c.pants + '"/>';
+      s += '<path d="M37 98 Q38 86 50 84 L70 84 Q82 86 83 98 L87 164 Q60 170 33 164 Z" fill="' + c.coat + '" stroke="rgba(0,0,0,.3)" stroke-width="1.5"/>';
+      if (c.shirt === 'tie') s += '<path d="M52 85 L60 99 L68 85 Z" fill="#fbfbf9"/><path d="M58.4 90 L61.6 90 L62.6 113 L60 117 L57.4 113 Z" fill="#111"/>';
+      else if (c.shirt) s += '<path d="M52 85 L60 114 L68 85 Z" fill="#fbfbf9"/><path d="M55 88 L60 91 L65 88 L65 94 L60 91 L55 94 Z" fill="#111"/>';
+      else s += '<path d="M53 85 L60 100 L67 85 Z" fill="#e9e2d0"/>';
+      s += '<circle cx="60" cy="126" r="1.7" fill="rgba(0,0,0,.35)"/><circle cx="60" cy="142" r="1.7" fill="rgba(0,0,0,.35)"/>';
+      s += '<path d="M39 99 Q31 128 34 152 M81 99 Q89 126 87 149" stroke="' + c.coat + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
+      s += '<circle cx="34" cy="155" r="5.5" fill="' + c.skin + '"/><circle cx="87" cy="152" r="5.5" fill="' + c.skin + '"/>';
+    } else {
+      var hand = c.bare ? c.skin : '#fbfbf9';
+      s += '<ellipse cx="50" cy="218" rx="7" ry="3.5" fill="#141414"/><ellipse cx="70" cy="218" rx="7" ry="3.5" fill="#141414"/>';
+      s += '<path d="M40 130 Q34 180 24 216 L96 216 Q86 180 80 130 Z" fill="' + c.dress + '" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>';
+      s += '<path d="M42 92 Q44 84 52 83 L68 83 Q76 84 78 92 L80 134 L40 134 Z" fill="' + c.dress + '" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>';
+      s += c.collar ? '<path d="M52 83.5 L60 91 L68 83.5 Z" fill="#fbfbf9"/>' : '<path d="M50 83.5 Q60 97 70 83.5 Z" fill="' + c.skin + '"/>';
+      s += '<rect x="40" y="127" width="40" height="6" fill="rgba(0,0,0,.18)"/>';
+      if (c.shawl) s += '<path d="M38 92 Q60 114 82 92 L85 106 Q60 128 35 106 Z" fill="' + c.shawl + '" stroke="rgba(0,0,0,.2)" stroke-width="1"/>';
+      s += '<path d="M41 96 Q33 122 37 146 M79 96 Q87 122 83 146" stroke="' + c.dress + '" stroke-width="10" fill="none" stroke-linecap="round"/>';
+      s += '<circle cx="37" cy="149" r="5" fill="' + hand + '"/><circle cx="83" cy="149" r="5" fill="' + hand + '"/>';
+    }
+    // head
+    var woman = c.body === 'woman';
+    s += '<rect x="55" y="74" width="10" height="13" fill="' + c.skin + '"/>';
+    if (woman) s += '<circle cx="60" cy="33" r="11" fill="' + c.hair + '"/>';
+    s += '<circle cx="37.5" cy="61" r="4.2" fill="' + c.skin + '"/><circle cx="82.5" cy="61" r="4.2" fill="' + c.skin + '"/>';
+    s += '<circle cx="60" cy="58" r="23" fill="' + c.skin + '"/>';
+    if (woman) s += '<path d="M37 60 Q35 34 60 34 Q85 34 83 60 Q80 44 60 43 Q40 44 37 60 Z" fill="' + c.hair + '"/>';
+    else s += '<path d="M37 57 Q37 33 60 32 Q83 33 83 57 Q79 43 60 42 Q41 43 37 57 Z" fill="' + c.hair + '"/>';
+    if (c.hat === 'top') s += '<rect x="43" y="6" width="34" height="29" rx="2" fill="#151515"/><rect x="43" y="27" width="34" height="4" fill="#3b3b3b"/><rect x="35" y="33" width="50" height="5" rx="2.5" fill="#151515"/>';
+    if (c.hat === 'picture') s += '<g transform="rotate(-7 60 32)"><path d="M45 34 Q45 17 60 17 Q75 17 75 34 Z" fill="#3b2b4a"/><ellipse cx="60" cy="35" rx="37" ry="6.5" fill="#3b2b4a"/><rect x="45" y="28" width="30" height="4" fill="#f3dbe3"/><circle cx="73" cy="25" r="4.2" fill="#f2b630"/><circle cx="67" cy="22.5" r="3.5" fill="#e07a9a"/><circle cx="78" cy="21" r="3" fill="#fbfbf9"/></g>';
+    s += '<path d="M60 61 Q62.5 64.5 59.5 65.5" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="1.5" stroke-linecap="round"/>';
+    if (c.cheeks) s += '<circle cx="46" cy="66" r="3.6" fill="#e07a7a" opacity=".35"/><circle cx="74" cy="66" r="3.6" fill="#e07a7a" opacity=".35"/>';
+    s += '<g class="face">' + face(mood || c.mood || 'neutral') + '</g>';
+    if (c.mustache) s += '<path d="M50 66.5 Q55 62.5 60 65.5 Q65 62.5 70 66.5 Q65 69.5 60 67.5 Q55 69.5 50 66.5 Z" fill="' + c.mustache + '"/>';
+    s += '</svg>';
+    return s;
+  }
+
+  /* ================= SCENES =================
+     s = Shaw's exact words, t = plain English, n = narrator (plain English).
+     Lines are in the play's order; some lines in between are skipped. */
+  var SCENES = {
+    athome: { start: ['mrsh'], cast: ['mrsh', 'higgins'], rain: false, lines: [
+      { who: 'nar', n: 'Months later. It’s Mrs. Higgins’s “at-home day,” when friends drop by her elegant apartment for afternoon visits. Then her son bursts in.', enter: ['higgins'] },
+      { who: 'mrsh', mood: 'shocked', s: "What are you doing here to-day? It is my at home day: you promised not to come.", t: 'Henry! What are you doing here today? It’s my at-home day. You promised you wouldn’t come.' },
+      { who: 'higgins', mood: 'happy', s: "I know, mother. I came on purpose.", t: 'I know, Mother. I came on purpose.' },
+      { who: 'mrsh', mood: 'upset', s: "But you mustn’t. I’m serious, Henry. You offend all my friends: they stop coming whenever they meet you.", t: 'But you can’t stay. I mean it, Henry. You insult all my friends. They stop visiting once they’ve met you.' },
+      { who: 'higgins', mood: 'smug', s: "Nonsense! I know I have no small talk; but people don’t mind.", t: 'Nonsense! I know I’m bad at small talk, but people don’t mind.' },
+      { who: 'mrsh', mood: 'smug', s: "Oh! don’t they? Small talk indeed! What about your large talk?", t: 'Oh, don’t they? Forget your small talk. What about your BIG talk? (She means his rude opinions.)' },
+      { who: 'higgins', mood: 'neutral', s: "I’ve picked up a girl.", t: 'I’ve taken on a girl.' },
+      { who: 'mrsh', mood: 'happy', s: "Does that mean that some girl has picked you up?", t: 'Do you mean some girl has finally fallen for you?' },
+      { who: 'higgins', s: "Not at all. I don’t mean a love affair.", t: 'No, no. It’s not a romance.' },
+      { who: 'mrsh', mood: 'upset', s: "What a pity!", t: 'Too bad! (She wishes he would fall in love.)' },
+      { who: 'higgins', mood: 'smug', s: "Oh, I can’t be bothered with young women. My idea of a loveable woman is something as like you as possible.", t: 'Oh, I don’t have time for young women. My idea of the perfect woman is someone as much like you as possible.' },
+      { who: 'higgins', mood: 'neutral', s: "She’s a common flower girl. I picked her off the kerbstone.", t: 'She’s a low-class flower girl. I found her on a street corner.' },
+      { who: 'mrsh', mood: 'shocked', s: "And invited her to my at-home!", t: 'And you invited her to MY at-home day?!' },
+      { who: 'higgins', mood: 'smug', star: true, s: "I’ve taught her to speak properly; and she has strict orders as to her behavior. She’s to keep to two subjects: the weather and everybody’s health—Fine day and How do you do, you know—and not to let herself go on things in general.", t: 'I’ve taught her to speak properly, and she has strict rules. She can only talk about two things: the weather and everyone’s health. Like “Nice day!” and “How are you?” Nothing else.' },
+      { who: 'mrsh', mood: 'shocked', s: "Safe! To talk about our health! about our insides! perhaps about our outsides! How could you be so silly, Henry?", t: 'Safe?! Talking about our health? About our insides? Maybe our outsides too? How could you be so silly, Henry?' },
+      { who: 'higgins', mood: 'happy', s: "I’ve a sort of bet on that I’ll pass her off as a duchess in six months. I started on her some months ago; and she’s getting on like a house on fire.", t: 'I have a bet that I’ll pass her off as a duchess in six months. I started a few months ago, and she’s learning super fast.' },
+      { who: 'higgins', mood: 'neutral', star: true, s: "You see, I’ve got her pronunciation all right; but you have to consider not only how a girl pronounces, but what she pronounces; and that’s where—", t: 'See, I’ve fixed HOW she says things. But you also have to think about WHAT she says, and that’s where—' },
+      { who: 'nar', burst: 'DING-DONG!', n: 'The doorbell! Guests are arriving. Higgins never gets to finish that sentence… but remember it.' }
+    ]},
+    guests: { start: ['mrsh', 'higgins'], cast: ['mrsh', 'higgins', 'mom', 'clara', 'fred'], rain: false, lines: [
+      { who: 'nar', enter: ['mom', 'clara'], moods: { higgins: 'upset' }, n: 'The maid announces the first guests: Mrs. and Miss Eynsford Hill. Higgins tries to sneak out, but too late.' },
+      { who: 'mom', mood: 'happy', s: "Your celebrated son! I have so longed to meet you, Professor Higgins.", t: 'Your famous son! I’ve wanted to meet you for so long, Professor Higgins.' },
+      { who: 'higgins', s: "Delighted.", t: 'Delighted. (He doesn’t sound delighted at all.)' },
+      { who: 'higgins', mood: 'neutral', s: "I’ve seen you before somewhere. I haven’t the ghost of a notion where; but I’ve heard your voice.", t: 'I’ve seen you somewhere before. I have no idea where, but I know your voice.' },
+      { who: 'game', focus: 'clara', q: 'Wait, we’ve met these two before! Where?', opts: ['In Higgins’s lab, in Act II', 'Under the church porch in the rain, in Act I', 'Nowhere. They’re brand-new characters.'], ok: 1 },
+      { who: 'nar', n: 'Yes! They’re the mother and daughter from Act I, the ones waiting for Freddy to find a cab. Their last name is Eynsford Hill.' },
+      { who: 'mrsh', mood: 'upset', s: "I’m sorry to say that my celebrated son has no manners. You mustn’t mind him.", t: 'I’m sorry, but my famous son has no manners. Please don’t mind him.' },
+      { who: 'clara', mood: 'happy', s: "I don’t.", t: 'I don’t!' },
+      { who: 'nar', enter: ['fred'], moods: { fred: 'happy' }, n: 'Then the maid announces one more guest: Mr. Eynsford Hill. It’s Freddy!' },
+      { who: 'higgins', mood: 'upset', s: "God of Heaven! another of them.", t: 'Oh no! Another one of them.' },
+      { who: 'fred', s: "Ahdedo?", t: 'How d’you do? (He mumbles it in a lazy, posh way.)' },
+      { who: 'higgins', s: "I’ll take my oath I’ve met you before somewhere. Where was it?", t: 'I swear I’ve met you somewhere before. Where was it?' },
+      { who: 'fred', mood: 'neutral', s: "I don’t think so.", t: 'I don’t think so.' },
+      { who: 'higgins', mood: 'smug', s: "And now, what the devil are we going to talk about until Eliza comes?", t: 'So what on earth are we supposed to talk about until Eliza gets here?' },
+      { who: 'clara', mood: 'happy', s: "I sympathize. I haven’t any small talk. If people would only be frank and say what they really think!", t: 'I agree! I’m bad at small talk too. If only people would be honest and say what they really think!' },
+      { who: 'higgins', mood: 'upset', s: "Lord forbid!", t: 'Heaven forbid!' },
+      { who: 'higgins', mood: 'neutral', star: true, s: "You see, we’re all savages, more or less. We’re supposed to be civilized and cultured—to know all about poetry and philosophy and art and science, and so on; but how many of us know even the meanings of these names?", t: 'See, we’re all savages, more or less. We’re supposed to be civilized and know all about poetry, philosophy, art, and science. But how many of us even know what those words mean?' },
+      { who: 'mrsh', mood: 'smug', s: "Or of manners, Henry?", t: 'Or what manners mean, Henry? (Ouch!)' },
+      { who: 'nar', n: 'Then the maid opens the door one more time: “Miss Doolittle.”' }
+    ]},
+    entrance: { start: ['mrsh', 'higgins', 'mom', 'clara', 'fred'], cast: ['mrsh', 'higgins', 'eliza', 'mom', 'clara', 'fred'], rain: false, lines: [
+      { who: 'nar', enter: ['eliza'], moods: { mom: 'shocked', clara: 'shocked', fred: 'shocked', higgins: 'happy' }, n: 'Eliza walks in, beautifully dressed. She looks so elegant that everyone stands up, flustered.' },
+      { who: 'eliza', star: true, s: "How do you do, Mrs. Higgins?", t: 'How do you do, Mrs. Higgins? (She speaks slowly and perfectly, and works hard to say the H in “Higgins.”)' },
+      { who: 'eliza', mood: 'happy', s: "Mr. Higgins told me I might come.", t: 'Mr. Higgins told me I could come.' },
+      { who: 'mrsh', mood: 'happy', s: "Quite right: I’m very glad indeed to see you.", t: 'Of course. I’m very glad to see you.' },
+      { who: 'mom', mood: 'neutral', s: "I feel sure we have met before, Miss Doolittle. I remember your eyes.", t: 'I’m sure we’ve met before, Miss Doolittle. I remember your eyes.' },
+      { who: 'eliza', mood: 'neutral', s: "How do you do?", t: 'How do you do? (She sticks to her script.)' },
+      { who: 'nar', moods: { fred: 'happy', clara: 'neutral' }, n: 'Freddy can’t stop staring at her. He’s smitten.' },
+      { who: 'higgins', mood: 'shocked', s: "By George, yes: it all comes back to me!", t: 'Oh my gosh, yes! Now I remember!' },
+      { who: 'higgins', mood: 'upset', s: "Covent Garden!", t: 'Covent Garden! (He finally remembers where he met the Eynsford Hills.)' },
+      { who: 'nar', n: 'A long, painful silence. Mrs. Higgins tries some polite small talk…' },
+      { who: 'mrsh', mood: 'neutral', s: "Will it rain, do you think?", t: 'Do you think it will rain?' },
+      { who: 'eliza', star: true, s: "The shallow depression in the west of these islands is likely to move slowly in an easterly direction. There are no indications of any great change in the barometrical situation.", t: '(Like a TV weather report:) A low-pressure system in the west of Britain will probably move slowly east. There’s no sign of any big change in the air pressure.' },
+      { who: 'fred', mood: 'happy', s: "Ha! ha! how awfully funny!", t: 'Ha ha! That’s so funny!' },
+      { who: 'eliza', mood: 'angry', s: "What is wrong with that, young man? I bet I got it right.", t: 'What’s wrong with that, young man? I bet I got it right.' },
+      { who: 'fred', s: "Killing!", t: 'Hilarious! (“Killing” was slang for “very funny.”)' },
+      { who: 'nar', moods: { eliza: 'neutral' }, n: 'Her pronunciation is perfect. But she sounds like a weather report. So far, so… okay?' }
+    ]},
+    smalltalk: { start: ['mrsh', 'higgins', 'eliza', 'mom', 'clara', 'fred'], cast: ['mrsh', 'higgins', 'eliza', 'mom', 'clara', 'fred'], rain: false, lines: [
+      { who: 'mom', mood: 'upset', s: "I’m sure I hope it won’t turn cold. There’s so much influenza about. It runs right through our whole family regularly every spring.", t: 'I hope it doesn’t turn cold. There’s so much flu going around. It goes through our whole family every spring.' },
+      { who: 'eliza', mood: 'upset', s: "My aunt died of influenza: so they said.", t: 'My aunt died of the flu. At least, that’s what they said.' },
+      { who: 'eliza', mood: 'smug', s: "But it’s my belief they done the old woman in.", t: 'But I think somebody murdered the old lady.' },
+      { who: 'mrsh', mood: 'shocked', s: "Done her in?", t: 'Murdered her?' },
+      { who: 'eliza', mood: 'neutral', s: "Y-e-e-e-es, Lord love you! Why should she die of influenza? She come through diphtheria right enough the year before.", t: 'Ye-e-es, Lord love you! Why would she die of the flu? She survived diphtheria (a deadly disease) just the year before.' },
+      { who: 'eliza', s: "They all thought she was dead; but my father he kept ladling gin down her throat til she came to so sudden that she bit the bowl off the spoon.", t: 'Everyone thought she was dead. But my father kept spooning gin down her throat until she woke up so suddenly that she bit the end off the spoon!' },
+      { who: 'mom', mood: 'shocked', s: "Dear me!", t: 'Oh my!' },
+      { who: 'eliza', mood: 'angry', star: true, s: "What become of her new straw hat that should have come to me? Somebody pinched it; and what I say is, them as pinched it done her in.", t: 'And what happened to her new straw hat that was supposed to go to me? Somebody stole it. And I say whoever stole it killed her!' },
+      { who: 'mom', mood: 'neutral', s: "What does doing her in mean?", t: 'What does “doing her in” mean?' },
+      { who: 'higgins', mood: 'smug', s: "Oh, that’s the new small talk. To do a person in means to kill them.", t: 'Oh, that’s the new small talk. To “do someone in” means to kill them. (He’s covering for her!)' },
+      { who: 'eliza', mood: 'smug', s: "Not her. Gin was mother’s milk to her.", t: '(About the gin:) It couldn’t hurt her. She drank gin like a baby drinks milk.' },
+      { who: 'nar', moods: { fred: 'happy', mom: 'shocked' }, n: 'Freddy is laughing so hard he can barely breathe.' },
+      { who: 'eliza', mood: 'angry', s: "If I was doing it proper, what was you laughing at?", t: 'If I was doing it right, then what were you laughing at?' },
+      { who: 'eliza', mood: 'upset', s: "Have I said anything I oughtn’t?", t: '(To Higgins) Did I say something I shouldn’t have?' },
+      { who: 'mrsh', mood: 'neutral', s: "Not at all, Miss Doolittle.", t: 'Not at all, Miss Doolittle. (She’s being kind.)' },
+      { who: 'higgins', s: "Ahem!", t: '(He clears his throat and checks his watch. Time to go!)' },
+      { who: 'eliza', mood: 'neutral', s: "Well: I must go.", t: 'Well, I must go.' },
+      { who: 'fred', mood: 'happy', s: "Are you walking across the Park, Miss Doolittle? If so—", t: 'Are you walking across the park, Miss Doolittle? If so, maybe I could—' },
+      { who: 'game', focus: 'eliza', q: 'How will Eliza get home? (Hint: remember the end of Act I.)', opts: ['Walk across the park with Freddy', 'By taxi', 'In Mrs. Higgins’s carriage'], ok: 1 },
+      { who: 'eliza', mood: 'smug', star: true, s: "Walk! Not bloody likely.", t: 'Walk? No way! (In 1914, “bloody” was a shocking swear word in Britain.)' },
+      { who: 'nar', burst: 'GASP!', moods: { mom: 'shocked', clara: 'happy', fred: 'shocked', mrsh: 'shocked', higgins: 'smug' }, n: 'Shaw’s stage direction here is one word: “Sensation.” When the play opened in London in 1914, this line caused a real-life sensation too.' },
+      { who: 'eliza', s: "I am going in a taxi.", t: 'I’m taking a taxi.' },
+      { who: 'nar', exit: ['eliza'], n: 'And out she sweeps, leaving the room in shock.' }
+    ]},
+    shock: { start: ['mrsh', 'higgins', 'mom', 'clara', 'fred'], cast: ['mrsh', 'higgins', 'pick', 'mom', 'clara', 'fred'], rain: false, lines: [
+      { who: 'nar', enter: ['pick'], exit: ['higgins'], moods: { pick: 'shocked', mom: 'shocked', clara: 'happy', fred: 'happy' }, n: 'Pickering gasps and sits down. Freddy dashes to the balcony to catch one more look at Eliza.' },
+      { who: 'cards', focus: 'mom', prompt: 'Your turn: tap each guest to see how they react', cards: [
+        { label: 'Mrs. Eynsford Hill', who: 'mom', s: "Well, I really can’t get used to the new ways.", t: 'Well, I just can’t get used to these new manners.', mood: 'shocked' },
+        { label: 'Clara', who: 'clara', s: "Oh, it’s all right, mamma, quite right. People will think we never go anywhere or see anybody if you are so old-fashioned.", t: 'Oh, it’s fine, Mom. People will think we never go anywhere if you’re so old-fashioned.', mood: 'happy' },
+        { label: 'Pickering', who: 'pick', s: "I’ve been away in India for several years; and manners have changed so much that I sometimes don’t know whether I’m at a respectable dinner-table or in a ship’s forecastle.", t: 'I’ve been away in India for years. Manners have changed so much that sometimes I can’t tell if I’m at a fancy dinner or hanging out with rough sailors.', mood: 'upset' }
+      ]},
+      { who: 'nar', enter: ['higgins'], moods: { higgins: 'smug' }, n: 'The Eynsford Hills get up to leave. Higgins has a wicked idea…' },
+      { who: 'higgins', s: "Be sure you try on that small talk at the three at-homes. Don’t be nervous about it. Pitch it in strong.", t: 'Be sure to try out that new small talk at your other three parties today. Don’t be shy. Go for it!' },
+      { who: 'clara', mood: 'happy', s: "Such nonsense, all this early Victorian prudery!", t: 'All this old-fashioned prudishness is such nonsense!' },
+      { who: 'higgins', s: "Such damned nonsense!", t: 'Such darned nonsense! (He’s egging her on.)' },
+      { who: 'clara', star: true, s: "Such bloody nonsense!", t: 'Such bloody nonsense! (She copies Eliza, thinking it’s the cool new way to talk.)' },
+      { who: 'mom', mood: 'shocked', s: "Clara!", t: 'Clara!!' },
+      { who: 'nar', exit: ['clara'], n: 'Clara leaves laughing, sure she’s totally up to date.' },
+      { who: 'mrsh', mood: 'happy', s: "Would you like to meet Miss Doolittle again?", t: '(To Freddy) Would you like to see Miss Doolittle again?' },
+      { who: 'fred', mood: 'happy', s: "Yes, I should, most awfully.", t: 'Yes, I would, very much!' },
+      { who: 'nar', exit: ['fred'], n: 'Freddy leaves, completely smitten.' },
+      { who: 'mom', mood: 'upset', star: true, s: "We’re so poor! and she gets so few parties, poor child! She doesn’t quite know.", t: '(Quietly, to Mrs. Higgins) We’re so poor, and she gets invited to so few parties, poor thing. She doesn’t really know how to act.' },
+      { who: 'nar', exit: ['mom'], n: 'The Eynsford Hills have a fancy name but very little money. That’s why Clara tries so hard to seem fashionable.' }
+    ]},
+    doll: { start: ['mrsh', 'higgins', 'pick'], cast: ['mrsh', 'higgins', 'pick'], rain: false, lines: [
+      { who: 'nar', moods: { higgins: 'happy', pick: 'happy' }, n: 'The guests are gone. Higgins asks his mother: is Eliza ready to pass as a lady?' },
+      { who: 'mrsh', mood: 'smug', star: true, s: "You silly boy, of course she’s not presentable. She’s a triumph of your art and of her dressmaker’s; but if you suppose for a moment that she doesn’t give herself away in every sentence she utters, you must be perfectly cracked about her.", t: 'You silly boy, of course she’s not ready. You and her dressmaker did amazing work. But if you think she doesn’t give herself away every time she opens her mouth, you’re crazy.' },
+      { who: 'pick', mood: 'upset', s: "But don’t you think something might be done? I mean something to eliminate the sanguinary element from her conversation.", t: 'But can’t something be done? I mean, to get the “bloody” out of her conversation? (“Sanguinary” is a fancy word for “bloody.”)' },
+      { who: 'mrsh', s: "Not as long as she is in Henry’s hands.", t: 'Not as long as Henry is teaching her. (He swears all the time!)' },
+      { who: 'mrsh', mood: 'neutral', s: "But where does this girl live?", t: 'But where does this girl live?' },
+      { who: 'higgins', mood: 'neutral', s: "With us, of course. Where would she live?", t: 'With us, of course. Where else would she live?' },
+      { who: 'mrsh', s: "But on what terms? Is she a servant? If not, what is she?", t: 'But as what? Is she a servant? If not, then what is she?' },
+      { who: 'mrsh', mood: 'smug', star: true, s: "You certainly are a pretty pair of babies, playing with your live doll.", t: 'You two are like a couple of babies, playing with a living doll.' },
+      { who: 'higgins', mood: 'happy', star: true, s: "But you have no idea how frightfully interesting it is to take a human being and change her into a quite different human being by creating a new speech for her. It’s filling up the deepest gulf that separates class from class and soul from soul.", t: 'You have no idea how fascinating it is to turn a person into a completely different person, just by giving her a new way of speaking. It’s closing the deepest gap between rich and poor, and between people.' },
+      { who: 'nar', moods: { mrsh: 'upset' }, n: 'Then both men start talking at once, louder and louder, about how amazing Eliza is, until Mrs. Higgins covers her ears.' },
+      { who: 'mrsh', mood: 'neutral', s: "Colonel Pickering: don’t you realize that when Eliza walked into Wimpole Street, something walked in with her?", t: 'Colonel Pickering, don’t you realize that when Eliza moved into Wimpole Street, something else moved in with her?' },
+      { who: 'pick', mood: 'happy', s: "Her father did. But Henry soon got rid of him.", t: 'Her father did! But Henry got rid of him fast.' },
+      { who: 'mrsh', s: "A problem.", t: 'A problem.' },
+      { who: 'pick', mood: 'neutral', s: "Oh, I see. The problem of how to pass her off as a lady.", t: 'Oh, I see. The problem of how to pass her off as a lady.' },
+      { who: 'mrsh', mood: 'angry', star: true, s: "No, you two infinitely stupid male creatures: the problem of what is to be done with her afterwards.", t: 'No, you two totally clueless men! The problem is what happens to her AFTER the experiment.' },
+      { who: 'higgins', mood: 'smug', s: "I don’t see anything in that. She can go her own way, with all the advantages I have given her.", t: 'I don’t see the problem. She can go her own way, with all the advantages I’ve given her.' },
+      { who: 'mrsh', mood: 'angry', star: true, s: "The advantages of that poor woman who was here just now! The manners and habits that disqualify a fine lady from earning her own living without giving her a fine lady’s income! Is that what you mean?", t: 'You mean the “advantages” that poor Mrs. Eynsford Hill has? Fancy manners that keep a lady from getting a job, but no fancy-lady money to live on? Is that what you mean?' },
+      { who: 'nar', exit: ['higgins', 'pick'], n: 'The two men laugh it off and leave, already planning their next outing with Eliza.' },
+      { who: 'mrsh', mood: 'angry', s: "Oh, men! men!! men!!!", t: 'Oh, MEN!' },
+      { who: 'nar', n: 'THE END of Act III. Eliza can sound like a lady, but what will happen to her when the experiment is over? Find out in Act IV.' }
+    ]}
+  };
+
+  /* ================= STAGE BUILDING ================= */
+  // Mrs. Higgins's drawing room on Chelsea Embankment: Morris wallpaper, three tall windows over the river, chintz curtains.
+  var BACKDROP = (function () {
+    var s = '<svg class="backdrop" viewBox="0 0 500 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+      '<defs><pattern id="morris" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#e8e0c8"/>' +
+      '<path d="M12 3 Q16.5 8 12 13 Q7.5 8 12 3 Z" fill="#a9b68c"/><path d="M0 14 Q4.5 19 0 24 Z M24 14 Q19.5 19 24 24 Z" fill="#a9b68c"/><circle cx="12" cy="19" r="1.7" fill="#c98a7a"/></pattern>' +
+      '<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9dce8"/><stop offset="1" stop-color="#edf0e4"/></linearGradient></defs>' +
+      '<rect width="500" height="300" fill="url(#morris)"/>' +
+      '<rect y="238" width="500" height="62" fill="#7a5e48"/><rect y="234" width="500" height="5" fill="#5c4434"/>';
+    [40, 200, 360].forEach(function (x) {
+      s += '<rect x="' + (x - 6) + '" y="86" width="112" height="150" fill="#f4f1ea"/>' +
+        '<rect x="' + x + '" y="92" width="100" height="138" fill="url(#sky)"/>' +
+        '<path d="M' + x + ' 182 Q' + (x + 18) + ' 168 ' + (x + 34) + ' 178 Q' + (x + 52) + ' 164 ' + (x + 70) + ' 176 Q' + (x + 86) + ' 166 ' + (x + 100) + ' 178 L' + (x + 100) + ' 190 L' + x + ' 190 Z" fill="#6f8f5a"/>' +
+        '<rect x="' + x + '" y="190" width="100" height="22" fill="#7fa7bf"/>' +
+        '<path d="M' + (x + 50) + ' 92 V230 M' + x + ' 160 H' + (x + 100) + '" stroke="#f4f1ea" stroke-width="4"/>' +
+        '<rect x="' + x + '" y="214" width="100" height="4" fill="#3c3a3a"/>' +
+        '<g fill="#b5653f"><rect x="' + (x + 12) + '" y="218" width="14" height="12"/><rect x="' + (x + 43) + '" y="218" width="14" height="12"/><rect x="' + (x + 74) + '" y="218" width="14" height="12"/></g>' +
+        '<g fill="#d23a3a"><circle cx="' + (x + 19) + '" cy="214" r="5"/><circle cx="' + (x + 50) + '" cy="214" r="5"/><circle cx="' + (x + 81) + '" cy="214" r="5"/></g>' +
+        '<path d="M' + (x - 12) + ' 80 Q' + (x - 2) + ' 82 ' + (x + 6) + ' 80 L' + (x + 4) + ' 236 L' + (x - 14) + ' 236 Z M' + (x + 94) + ' 80 Q' + (x + 102) + ' 82 ' + (x + 112) + ' 80 L' + (x + 114) + ' 236 L' + (x + 96) + ' 236 Z" fill="#b8715f"/>';
+    });
+    s += '<rect x="150" y="104" width="36" height="46" fill="#b78512"/><rect x="154" y="108" width="28" height="38" fill="#5f7f5a"/><circle cx="168" cy="119" r="6" fill="#efc6a6"/><path d="M158 146 Q168 126 178 146 Z" fill="#8f3a6a"/>';
+    s += '</svg>';
+    return s;
+  })();
+
+  function stageShell(stage) {
+    stage.innerHTML = BACKDROP + '<div class="boards"></div><div class="lip"></div><div class="cast"></div><div class="burst"></div><div class="valance"></div><div class="curtain l"></div><div class="curtain r"></div>';
+  }
+
+  function makePup(id, name) {
+    var d = document.createElement('div');
+    d.className = 'pup off';
+    d.dataset.id = id;
+    d.dataset.mood = CAST[id].mood || 'neutral';
+    d.innerHTML = puppetSVG(id) + '<span class="tag">' + (name || CAST[id].name) + '</span>';
+    return d;
+  }
+
+  function fitCast(stage) {
+    var cast = stage.querySelector('.cast');
+    var vis = Array.prototype.filter.call(cast.children, function (p) { return !p.classList.contains('off'); });
+    var n = Math.max(vis.length, 1);
+    var H = stage.clientHeight, W = cast.clientWidth;
+    var h = Math.min(H * 0.8, 1.1 * W / (n * 0.48));
+    cast.style.height = h + 'px';
+    var ov = -(h * 0.48 * 0.05);
+    vis.forEach(function (p) { p.style.margin = '0 ' + ov + 'px'; });
+  }
+
+  // Static stage (cover): data-static="id:mood id:mood"
+  document.querySelectorAll('[data-static]').forEach(function (stage) {
+    stageShell(stage);
+    stage.dataset.static.split(' ').forEach(function (pair) {
+      var bits = pair.split(':'), p = makePup(bits[0]);
+      p.classList.remove('off');
+      if (bits[1]) p.querySelector('.face').innerHTML = face(bits[1]);
+      stage.querySelector('.cast').appendChild(p);
+    });
+    requestAnimationFrame(function () { fitCast(stage); });
+  });
+
+  // Cast page
+  var CAST_INFO = [
+    ['mrsh', 'Mrs. Higgins', 'Higgins’s mother. Smart and elegant, and the only person Higgins really listens to.', '', null],
+    ['eliza', 'Eliza Doolittle', 'After months of lessons, she looks and sounds like a lady. But does she talk like one?', '', 'happy'],
+    ['higgins', 'Henry Higgins', 'Still brilliant, still rude. He thinks his experiment is going great.', '', 'smug'],
+    ['pick', 'Colonel Pickering', 'Higgins’s partner in the experiment. He now lives at Wimpole Street too.', '', 'happy'],
+    ['mom', 'Mrs. Eynsford Hill', 'The mother from Act I’s rainstorm. Proper and polite, but short on money.', 'Back from Act I', null],
+    ['clara', 'Clara Eynsford Hill', 'Her daughter, the cranky one from Act I. Desperate to seem fashionable.', 'Back from Act I', null],
+    ['fred', 'Freddy Eynsford Hill', 'Clara’s brother, who couldn’t find a cab in Act I. About to fall hard for Eliza.', 'Back from Act I', 'happy']
+  ];
+  var grid = document.getElementById('castGrid');
+  CAST_INFO.forEach(function (c) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="pic">' + puppetSVG(c[0], c[4]) + '</div><h3>' + c[1] + '</h3><p>' + c[2] + '</p>' + (c[3] ? '<span class="real">' + c[3] + '</span>' : '');
+    grid.appendChild(card);
+  });
+
+  /* ================= SCENE ENGINE ================= */
+  function Theater(root, key) {
+    var sc = SCENES[key], self = this;
+    this.sc = sc; this.idx = 0; this.visited = false; this.answers = {}; this.deal = {}; this.dealLast = null; this.dealPlain = false;
+    root.innerHTML = '<div class="stage" aria-hidden="true"></div>' +
+      '<div class="bubble" aria-live="polite"></div>' +
+      '<div class="controls"><button class="btn ghost small back" type="button" aria-label="Previous line">◂</button>' +
+      '<span class="count"></span><button class="btn ghost small replay" type="button" hidden>Replay</button>' +
+      '<button class="btn next" type="button">Next ▸</button></div>';
+    this.stage = root.querySelector('.stage');
+    this.bubble = root.querySelector('.bubble');
+    this.backBtn = root.querySelector('.back');
+    this.nextBtn = root.querySelector('.next');
+    this.replayBtn = root.querySelector('.replay');
+    this.count = root.querySelector('.count');
+    stageShell(this.stage);
+    var castEl = this.stage.querySelector('.cast');
+    this.pups = {};
+    sc.cast.forEach(function (id) { var p = makePup(id); self.pups[id] = p; castEl.appendChild(p); });
+    this.stage.insertAdjacentHTML('beforeend', '<span class="tap-hint">tap ▸</span>');
+
+    this.stage.addEventListener('click', function (e) { if (!e.target.closest('button')) self.forward(); });
+    this.nextBtn.addEventListener('click', function () { self.forward(); });
+    this.backBtn.addEventListener('click', function () { self.back(); });
+    this.replayBtn.addEventListener('click', function () { self.answers = {}; self.deal = {}; self.dealLast = null; self.dealPlain = false; self.go(0, true); });
+  }
+
+  Theater.prototype.state = function (upto) {
+    var sc = this.sc, st = { on: {}, mood: {}, name: {}, rain: sc.rain };
+    sc.start.forEach(function (id) { st.on[id] = true; });
+    sc.cast.forEach(function (id) { st.mood[id] = CAST[id].mood || 'neutral'; st.name[id] = (sc.names && sc.names[id]) || CAST[id].name; });
+    for (var i = 0; i <= upto; i++) {
+      var L = sc.lines[i];
+      (L.enter || []).forEach(function (id) { st.on[id] = true; });
+      (L.exit || []).forEach(function (id) { delete st.on[id]; });
+      if (L.mood && CAST[L.who]) st.mood[L.who] = L.mood;
+      if (L.moods) for (var k in L.moods) st.mood[k] = L.moods[k];
+      if (L.rename) for (var r in L.rename) st.name[r] = L.rename[r];
+      if (L.rain !== undefined) st.rain = L.rain;
+    }
+    return st;
+  };
+
+  Theater.prototype.blocked = function () {
+    var L = this.sc.lines[this.idx];
+    if (L.who === 'game') return this.answers[this.idx] === undefined;
+    if (L.who === 'cards') return Object.keys(this.deal).length < L.cards.length;
+    return false;
+  };
+
+  Theater.prototype.forward = function () {
+    if (this.blocked()) return;
+    if (this.idx < this.sc.lines.length - 1) this.go(this.idx + 1, true);
+    else showPage(cur + 1, true);
+  };
+  Theater.prototype.back = function () {
+    if (this.idx > 0) this.go(this.idx - 1, false);
+    else showPage(cur - 1, true);
+  };
+  Theater.prototype.enter = function () {
+    this.measure();
+    if (!this.visited) { this.visited = true; this.go(0, true); } else this.go(this.idx, false);
+  };
+
+  // Size the speech bubble for the scene's longest line, so the stage doesn't jump between lines.
+  Theater.prototype.measure = function () {
+    var self = this, real = this.bubble, m = real.cloneNode(false), max = 0;
+    var saveA = this.answers, saveIdx = this.idx, saveD = this.deal, saveL = this.dealLast, saveP = this.dealPlain;
+    m.removeAttribute('aria-live');
+    m.style.cssText = 'position:absolute;visibility:hidden;left:0;top:0;min-height:0;width:' + real.offsetWidth + 'px';
+    real.parentNode.appendChild(m);
+    this.bubble = m;
+    this.sc.lines.forEach(function (L, i) {
+      self.idx = i;
+      if (L.who === 'cards') {
+        self.deal = {}; L.cards.forEach(function (d, k) { self.deal[k] = true; });
+        L.cards.forEach(function (d, k) {
+          [false, true].forEach(function (plain) { self.dealLast = k; self.dealPlain = plain; self.renderBubble(L, self.state(i)); max = Math.max(max, m.offsetHeight); });
+        });
+        self.deal = saveD; self.dealLast = saveL; self.dealPlain = saveP;
+        return;
+      }
+      if (L.who === 'game') { self.answers = {}; self.answers[i] = (L.ok + 1) % L.opts.length; }
+      self.renderBubble(L, self.state(i));
+      max = Math.max(max, m.offsetHeight);
+      var tr = m.querySelector('.tr');
+      if (tr) { tr.click(); max = Math.max(max, m.offsetHeight); }
+      self.answers = saveA;
+    });
+    this.idx = saveIdx; this.bubble = real; m.remove();
+    real.style.minHeight = max + 'px';
+  };
+
+  Theater.prototype.go = function (i, withFx) {
+    var self = this, sc = this.sc, L = sc.lines[i];
+    this.idx = i;
+    var st = this.state(i);
+    var speaker = CAST[L.who] ? L.who : (L.focus || null);
+    sc.cast.forEach(function (id) {
+      var p = self.pups[id], wasOff = p.classList.contains('off');
+      p.classList.toggle('off', !st.on[id]);
+      if (wasOff && st.on[id] && withFx && !reduced) { p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); }
+      if (p.dataset.mood !== st.mood[id]) { p.dataset.mood = st.mood[id]; p.querySelector('.face').innerHTML = face(st.mood[id]); }
+      var tag = p.querySelector('.tag');
+      if (tag.textContent !== st.name[id]) { tag.textContent = st.name[id]; p.classList.toggle('renamed', st.name[id] !== CAST[id].name); }
+      p.classList.toggle('speaking', id === speaker);
+      p.classList.toggle('dim', !!speaker && id !== speaker);
+    });
+    this.stage.classList.toggle('dry', !st.rain);
+    var hint = this.stage.querySelector('.tap-hint');
+    if (hint) hint.style.display = i === 0 ? '' : 'none';
+
+    // effects only when moving forward
+    var burst = this.stage.querySelector('.burst');
+    burst.classList.remove('show');
+    if (withFx) {
+      if (L.burst) { burst.textContent = L.burst; void burst.offsetWidth; burst.classList.add('show'); }
+      if (L.fx === 'lightning' && !reduced) {
+        this.stage.classList.remove('zap'); void this.stage.offsetWidth; this.stage.classList.add('zap');
+        flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+      }
+    } else if (L.burst) { burst.textContent = L.burst; burst.classList.add('show'); }
+
+    this.renderBubble(L, st);
+    var last = i === sc.lines.length - 1;
+    this.count.textContent = (i + 1) + ' / ' + sc.lines.length;
+    this.replayBtn.hidden = !last;
+    this.nextBtn.textContent = last ? (cur === pages.length - 1 ? 'The end' : 'Next page ▸') : 'Next ▸';
+    this.nextBtn.disabled = this.blocked();
+    fitCast(this.stage);
+    requestAnimationFrame(function () { self.aimTail(speaker); });
+  };
+
+  Theater.prototype.aimTail = function (id) {
+    if (!id || !this.pups[id]) return;
+    var pr = this.pups[id].getBoundingClientRect(), br = this.bubble.getBoundingClientRect();
+    var x = pr.left + pr.width / 2 - br.left;
+    x = Math.max(26, Math.min(br.width - 26, x));
+    this.bubble.style.setProperty('--tx', x + 'px');
+  };
+
+  Theater.prototype.renderBubble = function (L, st) {
+    var self = this, b = this.bubble;
+    b.className = 'bubble';
+    var html = '';
+    if (CAST[L.who]) {
+      html += '<span class="chip" style="--c:' + CAST[L.who].c + '"><i></i>' + st.name[L.who] + '</span>';
+      html += '<p class="say">' + L.s + '</p>';
+      html += '<div class="tools"><button class="btn small ghost tr" type="button">Plain English</button>' + (L.star ? '<span class="key">★ Key line</span>' : '') + '</div>';
+      b.innerHTML = html;
+      var tr = b.querySelector('.tr'), say = b.querySelector('.say');
+      tr.addEventListener('click', function () {
+        var plain = !say.classList.contains('plain');
+        say.classList.toggle('plain', plain);
+        say.textContent = plain ? L.t : L.s;
+        tr.textContent = plain ? 'Shaw’s words' : 'Plain English';
+      });
+    } else if (L.who === 'nar') {
+      b.classList.add('nar');
+      b.innerHTML = '<span class="chip"><i style="background:var(--gas)"></i>Narrator</span><p class="say">' + L.n + '</p>';
+    } else if (L.who === 'game') {
+      b.classList.add('game');
+      var ans = this.answers[this.idx];
+      html = '<span class="chip"><i style="background:var(--violet)"></i>Your guess</span><p class="say">' + L.q + '</p><div class="choices">';
+      L.opts.forEach(function (o, k) {
+        var cls = '';
+        if (ans !== undefined) { if (k === L.ok) cls = ' right'; else if (k === ans) cls = ' wrong'; }
+        html += '<button class="choice' + cls + '" type="button" data-k="' + k + '"' + (ans !== undefined ? ' disabled' : '') + '>' + o + '</button>';
+      });
+      html += '</div>';
+      if (ans !== undefined) html += '<p class="feedback">' + (ans === L.ok ? '✓ You got it! Tap Next to see it happen.' : '✗ Not quite. Tap Next to find out.') + '</p>';
+      b.innerHTML = html;
+      b.querySelectorAll('.choice').forEach(function (btn) {
+        btn.addEventListener('click', function () { self.answers[self.idx] = +btn.dataset.k; self.go(self.idx, false); self.nextBtn.focus(); });
+      });
+    } else if (L.who === 'cards') {
+      b.classList.add('game');
+      html = '<span class="chip"><i style="background:var(--violet)"></i>' + L.prompt + '</span><div class="deal">';
+      L.cards.forEach(function (d, k) {
+        html += '<button class="deal-btn' + (self.deal[k] ? ' seen' : '') + (k === self.dealLast ? ' now' : '') + '" type="button" data-k="' + k + '">' + d.label + '</button>';
+      });
+      html += '</div>';
+      if (self.dealLast !== null) {
+        var d = L.cards[self.dealLast];
+        html += '<p class="say deal-say' + (self.dealPlain ? ' plain' : '') + '"><b>' + st.name[d.who] + ':</b> ' + (self.dealPlain ? d.t : '“' + d.s + '”') + '</p>';
+        html += '<div class="tools"><button class="btn small ghost tr" type="button">' + (self.dealPlain ? 'Shaw’s words' : 'Plain English') + '</button>' +
+          (Object.keys(self.deal).length === L.cards.length ? '<span class="feedback">That’s everyone. Tap Next.</span>' : '') + '</div>';
+      }
+      b.innerHTML = html;
+      b.querySelectorAll('.deal-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var k = +btn.dataset.k, c = L.cards[k];
+          self.deal[k] = true; self.dealLast = k; self.dealPlain = false;
+          Object.keys(self.pups).forEach(function (id) {
+            var p = self.pups[id];
+            p.classList.toggle('speaking', id === c.who);
+            p.classList.toggle('dim', id !== c.who);
+          });
+          if (c.mood) { var pp = self.pups[c.who]; pp.dataset.mood = c.mood; pp.querySelector('.face').innerHTML = face(c.mood); }
+          self.renderBubble(L, st);
+          self.nextBtn.disabled = self.blocked();
+          var again = self.bubble.querySelector('.deal-btn[data-k="' + k + '"]'); if (again) again.focus();
+        });
+      });
+      var tr = b.querySelector('.tr');
+      if (tr) tr.addEventListener('click', function () { self.dealPlain = !self.dealPlain; self.renderBubble(L, st); });
+    }
+  };
+
+  var theaters = [];
+  document.querySelectorAll('.theater').forEach(function (el) { var t = new Theater(el, el.dataset.scene); el._t = t; theaters.push(t); });
+  function relayout() {
+    document.querySelectorAll('.page.active .stage').forEach(fitCast);
+    var t = activeTheater(); if (t) { t.measure(); t.go(t.idx, false); }
+  }
+  window.addEventListener('resize', relayout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+
+  /* ================= WHO SAID IT ================= */
+  var WSI = [
+    { q: "I’ve picked up a girl.", a: 'higgins', opts: ['fred', 'higgins', 'pick'], t: 'I’ve taken on a girl.', where: 'Higgins, telling his mother about Eliza (Scene 1).' },
+    { q: "What is wrong with that, young man? I bet I got it right.", a: 'eliza', opts: ['clara', 'mrsh', 'eliza'], t: 'What’s wrong with that? I bet I got it right.', where: 'Eliza, after Freddy laughs at her weather report (Scene 3).' },
+    { q: "Such bloody nonsense!", a: 'clara', opts: ['eliza', 'clara', 'mom'], t: 'Such bloody nonsense!', where: 'Tricky! It’s Clara, copying Eliza because she thinks it’s fashionable (Scene 5).' },
+    { q: "You certainly are a pretty pair of babies, playing with your live doll.", a: 'mrsh', opts: ['mom', 'mrsh', 'clara'], t: 'You two are like babies playing with a living doll.', where: 'Mrs. Higgins, scolding Higgins and Pickering (Scene 6).' },
+    { q: "We’re so poor! and she gets so few parties, poor child!", a: 'mom', opts: ['mrsh', 'eliza', 'mom'], t: 'We’re so poor, and she gets invited to so few parties.', where: 'Mrs. Eynsford Hill, explaining her daughter Clara (Scene 5).' },
+    { q: "Killing!", a: 'fred', opts: ['fred', 'higgins', 'pick'], t: 'Hilarious!', where: 'Freddy, who thinks Eliza’s weather report is a comedy act (Scene 3).' }
+  ];
+  var wsiEl = document.getElementById('wsi'), wsiScore = document.getElementById('wsiScore'), wsiDone = 0, wsiRight = 0;
+  var wsiNext = document.getElementById('wsiNext'), wsiCount = document.getElementById('wsiCount'), wIdx = 0, wsiBoxes = [];
+  function showW() {
+    var last = wIdx === wsiBoxes.length - 1;
+    wsiBoxes.forEach(function (b, i) { b.hidden = i !== wIdx; });
+    wsiNext.disabled = !wsiBoxes[wIdx].dataset.done;
+    wsiNext.textContent = last ? 'Next page ▸' : 'Next ▸';
+    wsiCount.textContent = 'Question ' + (wIdx + 1) + ' of ' + wsiBoxes.length;
+    wsiScore.hidden = !(last && wsiDone === wsiBoxes.length);
+  }
+  WSI.forEach(function (w, i) {
+    var box = document.createElement('div');
+    box.className = 'wsi';
+    wsiBoxes.push(box);
+    var h = '<div class="quote-bubble">“<span class="v">' + w.q + '</span>”</div><div class="faces">';
+    w.opts.forEach(function (id) { h += '<button class="face-btn" type="button" data-id="' + id + '">' + puppetSVG(id, null, '22 0 76 96') + '<span>' + CAST_INFO.filter(function (c) { return c[0] === id; })[0][1] + '</span></button>'; });
+    h += '</div><p class="after" hidden></p>';
+    box.innerHTML = h;
+    wsiEl.appendChild(box);
+    box.querySelectorAll('.face-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ok = btn.dataset.id === w.a;
+        box.querySelectorAll('.face-btn').forEach(function (x) { x.disabled = true; if (x.dataset.id === w.a) x.classList.add('right'); });
+        if (!ok) btn.classList.add('wrong');
+        var after = box.querySelector('.after');
+        after.hidden = false;
+        after.innerHTML = '<b>' + (ok ? '✓ Yes!' : '✗ Nope.') + '</b> ' + w.where + (w.t ? ' In plain English: “' + w.t + '”' : '');
+        box.dataset.done = '1';
+        wsiDone++; if (ok) wsiRight++;
+        if (wsiDone === WSI.length) wsiScore.textContent = 'You got ' + wsiRight + ' out of ' + WSI.length + '.';
+        showW(); wsiNext.focus();
+      });
+    });
+  });
+  wsiNext.addEventListener('click', function () {
+    if (!wsiBoxes[wIdx].dataset.done) return;
+    if (wIdx < wsiBoxes.length - 1) { wIdx++; showW(); } else showPage(cur + 1, true);
+  });
+  showW();
+  wsiEl.closest('.page')._deck = {
+    forward: function () { wsiNext.click(); },
+    back: function () { if (wIdx > 0) { wIdx--; showW(); } else showPage(cur - 1); }
+  };
+
+  /* ================= QUIZ ================= */
+  var qs = Array.prototype.slice.call(document.querySelectorAll('.q')), quizScore = document.getElementById('quizScore'), quizReset = document.getElementById('quizReset'), qDone = 0, qRight = 0;
+  var quizWrap = document.getElementById('quizWrap'), quizNext = document.getElementById('quizNext'), quizCount = document.getElementById('quizCount'), quizIntro = document.getElementById('quizIntro'), qIdx = 0, quizOver = false;
+  function showQ() {
+    qs.forEach(function (q, i) { q.hidden = quizOver || i !== qIdx; });
+    quizWrap.hidden = !quizOver; quizIntro.hidden = quizOver; quizNext.hidden = quizOver;
+    quizNext.disabled = !qs[qIdx].dataset.done;
+    quizNext.textContent = qIdx === qs.length - 1 ? 'See my score ▸' : 'Next ▸';
+    quizCount.textContent = quizOver ? '' : 'Question ' + (qIdx + 1) + ' of ' + qs.length;
+  }
+  qs.forEach(function (q) {
+    var opts = q.querySelectorAll('.opt');
+    opts.forEach(function (o) {
+      o.addEventListener('click', function () {
+        if (q.dataset.done) return;
+        q.dataset.done = '1'; qDone++;
+        var ok = o.hasAttribute('data-right'); if (ok) qRight++;
+        opts.forEach(function (x) { x.disabled = true; if (x.hasAttribute('data-right')) { x.classList.add('right'); x.insertAdjacentHTML('afterbegin', '<span class="mark">✓ </span>'); } });
+        if (!ok) { o.classList.add('wrong'); o.insertAdjacentHTML('afterbegin', '<span class="mark">✗ </span>'); }
+        q.querySelector('.why').hidden = false;
+        showQ(); quizNext.focus();
+      });
+    });
+  });
+  quizNext.addEventListener('click', function () {
+    if (!qs[qIdx].dataset.done) return;
+    if (qIdx < qs.length - 1) qIdx++;
+    else { quizOver = true; quizScore.textContent = 'You got ' + qRight + ' out of ' + qs.length + '.' + (qRight === qs.length ? ' Higgins would be impressed.' : ''); }
+    showQ();
+  });
+  quizReset.addEventListener('click', function () {
+    // Start the whole zine over: reload without the page number, which clears every answer and opens the cover.
+    location.replace(location.href.split('#')[0]);
+  });
+  showQ();
+  qs[0].closest('.page')._deck = {
+    forward: function () { if (!quizNext.hidden) quizNext.click(); },
+    back: function () { if (quizOver) { quizOver = false; showQ(); } else if (qIdx > 0) { qIdx--; showQ(); } else showPage(cur - 1); }
+  };
+
+  /* ================= PAGE NAVIGATION ================= */
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var cur = 0;
+  var flash = document.querySelector('.flash');
+
+  function activeTheater() { var el = pages[cur].querySelector('.theater'); return el ? el._t : null; }
+
+  function showPage(i, moveFocus) {
+    if (i < 0 || i >= pages.length) return;
+    pages[cur].classList.remove('active');
+    cur = i;
+    pages[cur].classList.add('active');
+    pages[cur].scrollTop = 0;
+    try { history.replaceState(null, '', '#p' + (cur + 1)); } catch (e) {}
+    window.scrollTo(0, 0);
+    pages[cur].querySelectorAll('.stage.static').forEach(fitCast);
+    var t = activeTheater(); if (t) t.enter();
+    if (moveFocus) { var h = pages[cur].querySelector('h1, h2'); if (h) h.focus({ preventScroll: true }); }
+  }
+
+  document.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click', function () { showPage(+b.dataset.go, true); }); });
+
+  function step(dir) {
+    var t = activeTheater(), d = pages[cur]._deck;
+    if (t) { if (dir > 0) t.forward(); else t.back(); }
+    else if (d) { if (dir > 0) d.forward(); else d.back(); }
+    else showPage(cur + dir);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+  });
+  var sx = null, sy = null;
+  document.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (sx === null) return;
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) step(dx < 0 ? 1 : -1);
+    sx = sy = null;
+  }, { passive: true });
+
+  var m = /^#p(\d+)$/.exec(location.hash);
+  pages[0].classList.add('active');
+  showPage(m ? Math.min(Math.max(+m[1] - 1, 0), pages.length - 1) : 0);
+})();
+</script>
+</body>
+</html>
