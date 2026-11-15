@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pygmalion: An Interactive Zine</title>
+<style>
+  :root {
+    --paper: #f4ecd8;
+    --ink: #2b2118;
+    --accent: #8b2e2e;
+    --muted: #6b5a48;
+    --card: #fffaf0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.5;
+  }
+  header {
+    text-align: center;
+    padding: 56px 20px 28px;
+    border-bottom: 3px double var(--ink);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .kicker {
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: clamp(2.6rem, 8vw, 4.5rem);
+    margin: 0;
+    letter-spacing: 0.04em;
+  }
+  .byline {
+    font-style: italic;
+    color: var(--muted);
+    margin: 8px 0 0;
+    font-size: 1.1rem;
+  }
+  .intro {
+    max-width: 640px;
+    margin: 28px auto 0;
+    font-size: 1.1rem;
+  }
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+  .how {
+    text-align: center;
+    font-size: 1.05rem;
+    margin: 0 0 28px;
+  }
+  .acts {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 18px;
+  }
+  .act a {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 20px 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .act a:hover, .act a:focus-visible {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--accent);
+    outline: none;
+  }
+  .num {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: bold;
+  }
+  .text h2 {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+  }
+  .text p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .go {
+    margin-left: auto;
+    font-weight: bold;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 0 20px 40px;
+  }
+  @media (max-width: 560px) {
+    .act a { flex-wrap: wrap; }
+    .go { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="kicker">An Interactive Zine</p>
+  <h1>Pygmalion</h1>
+  <p class="byline">by George Bernard Shaw</p>
+  <p class="intro">
+    A flower girl, a phonetics professor, and a bet that a new way of speaking
+    can change a person's whole life. Explore the play one act at a time.
+  </p>
+</header>
+
+<main>
+  <p class="how">👉 <strong>Click an act below to begin.</strong> You can come back to this page from any act.</p>
+
+  <ul class="acts">
+    <li class="act">
+      <a href="act1.html">
+        <span class="num">I</span>
+        <span class="text">
+          <h2>Act One</h2>
+          <p>A rainy night in Covent Garden, where Higgins first meets Eliza.</p>
+        </span>
+        <span class="go">Open →</span>
+      </a>
+    </li>
+    <li class="act">
+      <a href="act2.html">
+        <span class="num">II</span>
+        <span class="text">
+          <h2>Act Two</h2>
+          <p>Eliza arrives at Higgins's laboratory asking for lessons, and the bet is made.</p>
+        </span>
+        <span class="go">Open →</span>
+      </a>
+    </li>
+    <li class="act">
+      <a href="act3.html">
+        <span class="num">III</span>
+        <span class="text">
+          <h2>Act Three</h2>
+          <p>Eliza's first test in society at Mrs. Higgins's at-home day.</p>
+        </span>
+        <span class="go">Open →</span>
+      </a>
+    </li>
+    <li class="act">
+      <a href="act4.html">
+        <span class="num">IV</span>
+        <span class="text">
+          <h2>Act Four</h2>
+          <p>After the triumph at the ball, Eliza asks what becomes of her now.</p>
+        </span>
+        <span class="go">Open →</span>
+      </a>
+    </li>
+    <li class="act">
+      <a href="act5.html">
+        <span class="num">V</span>
+        <span class="text">
+          <h2>Act Five</h2>
+          <p>A final confrontation, and Eliza claims her independence.</p>
+        </span>
+        <span class="go">Open →</span>
+      </a>
+    </li>
+  </ul>
+</main>
+
+<footer>
+  Made as a class companion to <em>Pygmalion</em>.
+</footer>
+
+</body>
+</html>
